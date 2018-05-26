@@ -35,7 +35,7 @@ class SmartThymio(Thymio, object):
 
             image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
         if save:
-            file_name = 'image_{}'.format(self.global_step)
+            file_name = '{}'.format(self.global_step)
             np.save(IMAGE_SAVE_DIR + file_name, image)
             with open('{}{}.json'.format(IMAGE_SAVE_DIR,file_name), 'w') as f:
                 json.dump(res.json(), f)
