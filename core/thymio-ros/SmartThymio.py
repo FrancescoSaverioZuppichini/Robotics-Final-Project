@@ -22,6 +22,7 @@ class SmartThymio(Thymio, object):
         self.HOST_URL = "http://192.168.168.64:8080"
         res = requests.get('{}/model'.format(self.HOST_URL)).json()
         self.colors, self.class_names = res['colors'], res['classes']
+        self.global_step = 0
         print("got them!")
 
     def draw_image(self, image, res, boxes=True, save=True):
@@ -34,7 +35,7 @@ class SmartThymio(Thymio, object):
 
             image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
         if save:
-            file_name = 'image_{}'.format(rospy.Time.now())
+            file_name = 'image_{}'.format(self.global_step)
             np.save(IMAGE_SAVE_DIR + file_name, image)
             with open('{}{}.json'.format(IMAGE_SAVE_DIR,file_name), 'w') as f:
                 json.dump(res.json(), f)
@@ -54,8 +55,7 @@ class SmartThymio(Thymio, object):
                 pprint(res.json())
 
                 if self.draw: self.draw_image(image, res=res)
-
-
+                self.global_step += 1
 
             except CvBridgeError as e:
                 print(e)
