@@ -1,3 +1,10 @@
+*.jpg
+*.png
+*.weights
+*.h5
+logs/
+*_test.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -8,6 +15,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -78,10 +86,11 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# dotenv
 .env
+
+# virtualenv
 .venv
-env/
 venv/
 ENV/
 
@@ -97,7 +106,3 @@ ENV/
 
 # mypy
 .mypy_cache/
-
-# yolo
-
-yolo.h5
