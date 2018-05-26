@@ -3,12 +3,14 @@ import requests as req
 import cv2
 from pprint import pprint
 import requests
+import rospy
 from utils import draw_boxes, unbox
 import numpy as np
+import json
 
 from cv_bridge import CvBridge, CvBridgeError
 
-
+IMAGE_SAVE_DIR = './image_save/'
 
 class SmartThymio(Thymio, object):
 
@@ -22,7 +24,7 @@ class SmartThymio(Thymio, object):
         self.colors, self.class_names = res['colors'], res['classes']
         print("got them!")
 
-    def draw_image(self, image, res, boxes=True):
+    def draw_image(self, image, res, boxes=True, save=True):
 
         if boxes:
             out_scores, out_boxes, out_classes, out_classes_idx = unbox(res.json())
@@ -31,6 +33,11 @@ class SmartThymio(Thymio, object):
                                         is_array=True)
 
             image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+        if save:
+            file_name = 'image_{}'.format(rospy.Time.now())
+            np.save(IMAGE_SAVE_DIR + file_name, image)
+            with open('{}{}.json'.format(IMAGE_SAVE_DIR,file_name), 'w') as f:
+                json.dump(res.json(), f)
 
         cv2.imshow('image', image)
         cv2.waitKey(1)
@@ -47,6 +54,8 @@ class SmartThymio(Thymio, object):
                 pprint(res.json())
 
                 if self.draw: self.draw_image(image, res=res)
+
+
 
             except CvBridgeError as e:
                 print(e)
