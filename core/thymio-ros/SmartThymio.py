@@ -7,8 +7,10 @@ import rospy
 from utils import draw_boxes, unbox
 import numpy as np
 import json
-
+from PID import PID
 from cv_bridge import CvBridge, CvBridgeError
+from utils import Params
+from time import time
 
 IMAGE_SAVE_DIR = './image_save/'
 
@@ -23,9 +25,15 @@ class SmartThymio(Thymio, object):
         res = requests.get('{}/model'.format(self.HOST_URL)).json()
         self.colors, self.class_names = res['colors'], res['classes']
         self.global_step = 0
+        self.camera_res  = (480,640)
+        self.target = ['chair']
+        self.angular_pid = PID(Kd=2, Ki=0, Kp=0.001)
+        self.last_elapsed = 0
+        self.MAX_TO_WAIT = 0.3
+
         print("got them!")
 
-    def draw_image(self, image, res, boxes=True, save=True):
+    def draw_image(self, image, res, boxes=True, save=False):
 
         if boxes:
             out_scores, out_boxes, out_classes, out_classes_idx = unbox(res.json())
@@ -43,7 +51,57 @@ class SmartThymio(Thymio, object):
         cv2.imshow('image', image)
         cv2.waitKey(1)
 
+    def is_target_in_img(self, data, target):
+        filtered = list(filter(lambda x: x['class'] in target, data))
+        return len(filtered) > 0
+
+    def get_class_data(seldf, data, class_name):
+        filtered = list(filter(lambda x: x['class'] == class_name, data))
+
+        return None if len(filtered) <= 0 else filtered[0]
+
+    def get_box(self, data, class_name):
+        data = self.get_class_data(data, class_name)
+        box = np.array(data['boxes'])
+        box[box < 0] = 0  # prune negative
+        return box
+
+
+    def get_error(self, box):
+        height, width = self.camera_res
+        img_mid_p = width // 2
+        top, left, bottom, right = box
+        target_mid_p = np.abs(left - right) / 2
+        offset = (left + target_mid_p)
+        err = offset - img_mid_p
+        return err, offset
+
+    def on_prediction_success(self, pred):
+        if self.is_target_in_img(pred, self.target):
+            box = self.get_box(pred, self.target[0])
+            err, offset = self.get_error(box)
+
+            dt = self.time_elapsed - self.last_elapsed
+            ang_vel = self.angular_pid.step(err, dt)
+
+            pprint(box)
+
+            print('err   : {:.2f}'.format(err))
+            print('offset: {:.2f}'.format(offset))
+            print('dt    : {:.2f}'.format(dt))
+            print('vel   : {:.2f}'.format(ang_vel))
+
+            self.last_elapsed =  self.time_elapsed
+
+            self.update_vel(Params(), Params(z=-1 * ang_vel))
+
+            rospy.sleep(self.MAX_TO_WAIT)
+        else:
+            # should go in exploration mode
+            self.stop()
+
     def camera_callback(self, data):
+        self.stop()
         if self.should_send:
             try:
                 image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -52,7 +110,8 @@ class SmartThymio(Thymio, object):
                 self.should_send = False
                 res = req.post('{}/prediction'.format(self.HOST_URL), json={'image' : image.tolist()})
                 self.should_send = True
-                pprint(res.json())
+                pred = res.json()['res']
+                self.on_prediction_success(pred)
 
                 if self.draw: self.draw_image(image, res=res)
                 self.global_step += 1
@@ -60,11 +119,13 @@ class SmartThymio(Thymio, object):
             except CvBridgeError as e:
                 print(e)
                 print('Could not convert to cv2')
-            except Exception as e:
-                # TODO add connection error and handling
-                print(e)
-                print('Something exploded!!')
+            # except Exception as e:
+            #     # TODO add connection error and handling
+            #     print(e)
+            #     print('Something exploded!!')
         else:
             print 'Skipped!'
         return
+
+
 

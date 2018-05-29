@@ -21,6 +21,8 @@ def draw_boxes(image, out_boxes, out_classes, out_scores, colors, class_names, i
                               size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
     thickness = (image.size[0] + image.size[1]) // 300
 
+    draw = None
+
     for i, c in reversed(list(enumerate(out_classes))):
         predicted_class = class_names[c]
         box = out_boxes[i]
@@ -52,7 +54,7 @@ def draw_boxes(image, out_boxes, out_classes, out_scores, colors, class_names, i
             fill=tuple(colors[c]))
         draw.text(text_origin, label, fill=(0, 0, 0), font=font)
 
-    del draw
+    if draw: del draw
 
     return image
 

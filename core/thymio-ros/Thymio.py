@@ -62,6 +62,8 @@ class Thymio:
             pass
 
     def camera_callback(self, data):
+        for hook in self.hooks:
+            hook.on_receive_camera_data(self, data)
         pass
 
     def thymio_state_service_request(self, position, orientation):
@@ -103,6 +105,7 @@ class Thymio:
 
         # rospy.loginfo("State from Odom: (%.5f, %.5f, %.5f) " % (self.current_pose.position.x, self.current_pose.position.y, yaw))
         self.time_elapsed += 10
+
         for hook in self.hooks:
             hook.on_update_pose(self)
 
@@ -124,6 +127,7 @@ class Thymio:
         self.update_vel(linear, angular)
 
         while not rospy.is_shutdown():
+            print(self.vel_msg.angular.z)
             self.velocity_publisher.publish(self.vel_msg)
             self.rate.sleep()
 
