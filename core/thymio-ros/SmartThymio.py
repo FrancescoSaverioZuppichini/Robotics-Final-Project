@@ -100,28 +100,52 @@ class SmartThymio(Thymio, object):
             # should go in exploration mode
             self.stop()
 
+    def ask_for_prediction(self, image):
+        self.should_send = False
+        res = req.post('{}/prediction'.format(self.HOST_URL), json={'image': image.tolist()})
+        self.should_send = True
+
+        return res
+
+    def on_get_image_from_camera_success(self, image):
+
+        res = self.ask_for_prediction(image)
+        pred = res.json()['res']
+        self.on_prediction_success(pred)
+
+        if self.draw: self.draw_image(image, res=res)
+        self.global_step += 1
+
+    def camera_callback_compressed(self, data):
+        if self.should_send:
+            try:
+                np_arr = np.fromstring(data.data, dtype=np.uint8)
+                image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                self.on_get_image_from_camera_success(image)
+
+            except Exception as e:
+            #     # TODO add connection error and handling
+                print(e)
+            #     print('Something exploded!!')
+        else:
+            print 'Skipped!'
+        return
+
+
     def camera_callback(self, data):
-        self.stop()
         if self.should_send:
             try:
                 image = self.bridge.imgmsg_to_cv2(data, "bgr8")
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-                self.should_send = False
-                res = req.post('{}/prediction'.format(self.HOST_URL), json={'image' : image.tolist()})
-                self.should_send = True
-                pred = res.json()['res']
-                self.on_prediction_success(pred)
-
-                if self.draw: self.draw_image(image, res=res)
-                self.global_step += 1
+                self.on_get_image_from_camera_success(image)
 
             except CvBridgeError as e:
                 print(e)
                 print('Could not convert to cv2')
-            # except Exception as e:
+            except Exception as e:
             #     # TODO add connection error and handling
-            #     print(e)
+                print(e)
             #     print('Something exploded!!')
         else:
             print 'Skipped!'

@@ -8,7 +8,7 @@ from math import cos, sin, asin, tan, atan2
 # msgs and srv for working with the set_model_service
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
-from sensor_msgs.msg import Range, Image
+from sensor_msgs.msg import Range, Image, CompressedImage
 from std_srvs.srv import Empty
 from random import random
 
@@ -44,7 +44,11 @@ class Thymio:
         Range,
         callback(self.sensors_callback,i,sensor_name)) for i,sensor_name in enumerate(self.sensors_names)]
 
-        self.camera_subscriber = rospy.Subscriber(self.name + '/camera/image_raw', Image, self.camera_callback, queue_size=1, buff_size=2**30)
+
+
+        # self.camera_subscriber = rospy.Subscriber(self.name + '/camera/image_raw', Image, self.camera_callback, queue_size=1, buff_size=2**30)
+        self.camera_subscriber = rospy.Subscriber(self.name + '/camera/image_raw/compressed', CompressedImage, self.camera_callback_compressed, queue_size=1, buff_size=2**24)
+
 
         self.current_pose = Pose()
         self.current_twist = Twist()
@@ -62,6 +66,11 @@ class Thymio:
             pass
 
     def camera_callback(self, data):
+        for hook in self.hooks:
+            hook.on_receive_camera_data(self, data)
+        pass
+
+    def camera_callback_compressed(self, data):
         for hook in self.hooks:
             hook.on_receive_camera_data(self, data)
         pass
@@ -127,7 +136,6 @@ class Thymio:
         self.update_vel(linear, angular)
 
         while not rospy.is_shutdown():
-            print(self.vel_msg.angular.z)
             self.velocity_publisher.publish(self.vel_msg)
             self.rate.sleep()
 
