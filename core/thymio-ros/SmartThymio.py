@@ -11,6 +11,8 @@ from PID import PID
 from cv_bridge import CvBridge, CvBridgeError
 from utils import Params
 from time import time
+from time import sleep
+import threading
 
 IMAGE_SAVE_DIR = './image_save/'
 
@@ -26,12 +28,11 @@ class SmartThymio(Thymio, object):
         self.colors, self.class_names = res['colors'], res['classes']
         self.global_step = 0
         self.camera_res  = (480,640)
-        self.target = ['chair']
-        self.angular_pid = PID(Kd=2, Ki=0, Kp=0.001)
+        self.target = ['bottle']
+        self.angular_pid = PID(Kd=2, Ki=0, Kp=0.0001)
         self.last_elapsed = 0
-        self.MAX_TO_WAIT = 0.3
-
-        print("got them!")
+        self.MAX_TO_WAIT = 0.1
+        self.p = threading.Thread()
 
     def draw_image(self, image, res, boxes=True, save=False):
 
@@ -101,36 +102,49 @@ class SmartThymio(Thymio, object):
             self.stop()
 
     def ask_for_prediction(self, image):
-        self.should_send = False
-        res = req.post('{}/prediction'.format(self.HOST_URL), json={'image': image.tolist()})
+        # self.should_send = False
+        self.res = req.post('{}/prediction'.format(self.HOST_URL), json={'image': image.tolist()})
+
         self.should_send = True
 
-        return res
-
-    def on_get_image_from_camera_success(self, image):
-
-        res = self.ask_for_prediction(image)
-        pred = res.json()['res']
-        self.on_prediction_success(pred)
-
-        if self.draw: self.draw_image(image, res=res)
         self.global_step += 1
 
-    def camera_callback_compressed(self, data):
-        if self.should_send:
-            try:
-                np_arr = np.fromstring(data.data, dtype=np.uint8)
-                image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-                self.on_get_image_from_camera_success(image)
+        pred = self.res.json()['res']
 
-            except Exception as e:
-            #     # TODO add connection error and handling
-                print(e)
+        pprint(pred)
+        self.on_prediction_success(pred)
+
+        # self.p.join()
+
+        return self.res
+
+    def on_get_image_from_camera_success(self, image):
+        # try:
+            # self.p.start()
+        # except RuntimeError: #occurs if thread is dead
+        self.p = threading.Thread(target=self.ask_for_prediction, args=[image])
+        self.p.start()
+
+
+    def camera_callback_compressed(self, data):
+        should_send = not self.p.is_alive()
+
+        if should_send:
+            print 'Sending'
+            # try:
+            np_arr = np.fromstring(data.data, dtype=np.uint8)
+            image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            self.on_get_image_from_camera_success(image)
+            self.image = image
+
+            # except Exception as e:
+            # #     # TODO add connection error and handling
+            #     print(e)
             #     print('Something exploded!!')
         else:
-            print 'Skipped!'
+            if self.draw: self.draw_image(self.image, res=self.res)
+            print 'Thread busy, will send later.'
         return
-
 
     def camera_callback(self, data):
         if self.should_send:
@@ -139,7 +153,6 @@ class SmartThymio(Thymio, object):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
                 self.on_get_image_from_camera_success(image)
-
             except CvBridgeError as e:
                 print(e)
                 print('Could not convert to cv2')
@@ -148,6 +161,8 @@ class SmartThymio(Thymio, object):
                 print(e)
             #     print('Something exploded!!')
         else:
+            if self.draw: self.draw_image(self.image, res=self.res)
+
             print 'Skipped!'
         return
 
