@@ -24,15 +24,30 @@ class SmartThymio(Thymio, object):
         self.should_send = True # avoid automatic fire to the server
         self.draw = True
         self.HOST_URL = "http://192.168.168.64:8080"
-        res = requests.get('{}/model'.format(self.HOST_URL)).json()
-        self.colors, self.class_names = res['colors'], res['classes']
+        self.res = None
         self.global_step = 0
         self.camera_res  = (480,640)
         self.target = ['dog','teddy bear']
-        self.angular_pid = PID(Kd=5, Ki=0, Kp=1)
+        self.angular_pid = PID(Kd=5, Ki=0, Kp=0.5)
+        self.linear_pid = PID(Kd=5, Ki=0, Kp=0.5)
+        self.object_pid = PID(Kd=3, Ki=0, Kp=0.5)
+
         self.last_elapsed = 0
+        self.last_elapsed_sensors = 0
+
         self.MAX_TO_WAIT = 0.2
         self.p = threading.Thread()
+        self.obstacle = False
+        self.sensors_cache_values = np.zeros(7)
+
+        self.colors, self.class_names = self.get_model_info()
+
+
+    def get_model_info(self):
+
+        res = requests.get('{}/model'.format(self.HOST_URL)).json()
+
+        return res['colors'], res['classes']
 
     def draw_image(self, image, res, boxes=True, save=False):
 
@@ -74,7 +89,73 @@ class SmartThymio(Thymio, object):
         target_mid_p = np.abs(left - right) / 2
         offset = (left + target_mid_p)
         err = offset - img_mid_p
+
         return err, offset
+
+    def on_target(self, target_data):
+
+        box = self.get_box(target_data)
+
+        err, offset = self.get_error(box)
+
+        width, _ = self.camera_res
+        err = err / width  # normalize in %
+        dt = self.time_elapsed - self.last_elapsed
+        ang_vel = self.object_pid.step(err, dt)
+
+        # print('---------------')
+        # print('err   : {:.2f}'.format(err))
+        # print('offset: {:.2f}'.format(offset))
+        # print('dt    : {:.2f}'.format(dt))
+        # print('vel   : {:.2f}'.format(ang_vel))
+
+        self.last_elapsed = self.time_elapsed
+
+        # ang_vel /= 10
+
+        self.update_vel(Params(x=0.1), Params(z=-1 * ang_vel))
+
+    def on_receive_sensor_data(self, data, sensor_id, name):
+        val = data.range
+        max = data.max_range
+
+
+        if(val == np.inf): val = 0
+
+        else:
+            if(val < 0): val = data.min_range
+            val = max - val
+            val = val / max
+
+        if sensor_id >= 5: val *= -1
+
+        self.sensors_cache_values[sensor_id] = val
+
+        self.obstacle = np.sum(self.sensors_cache_values) != 0
+
+        if self.obstacle:
+
+            lin_err = np.sum(self.sensors_cache_values) / self.sensors_cache_values.shape[0]
+            ang_err = np.sum(self.sensors_cache_values[:2] - self.sensors_cache_values[3:5]) +  (self.sensors_cache_values[5] - self.sensors_cache_values[6])
+
+            ang_vel = self.angular_pid.step(ang_err, 0.1)
+            vel = self.linear_pid.step(lin_err, 0.1)
+
+            self.last_elapsed_sensors = self.time_elapsed
+
+            self.update_vel(Params(x=-vel), Params(z=-ang_vel))
+        # else: self.stop()
+
+    def explore(self):
+        # rotate in place
+        self.update_vel(Params(), Params(z=0.1))
+
+    def select_target(self, targets, metric='closest'):
+        return targets[0]
+
+    def on_targets(self, targets_data):
+        target_data = self.select_target(targets_data)
+        self.on_target(target_data)
 
     def on_prediction_success(self, pred):
 
@@ -82,33 +163,13 @@ class SmartThymio(Thymio, object):
 
         there_are_targets = len(targets_data) > 0
         # select a target using some metrics, e.g rectangle area
-        if there_are_targets:
-            target_data = targets_data[0]
-
-            box = self.get_box(target_data)
-
-            err, offset = self.get_error(box)
-
-            width, _ = self.camera_res
-            err = err / width # normalize in %
-            dt = self.time_elapsed - self.last_elapsed
-            ang_vel = self.angular_pid.step(err, dt)
-
-            # pprint(box)
-
-            print('err   : {:.2f}'.format(err))
-            print('offset: {:.2f}'.format(offset))
-            print('dt    : {:.2f}'.format(dt))
-            print('vel   : {:.2f}'.format(ang_vel))
-
-            self.last_elapsed =  self.time_elapsed
-            # ang_vel /= 10
-
-            self.update_vel(Params(), Params(z=-1 * ang_vel))
-            print(ang_vel)
+        if not self.obstacle:
+            if there_are_targets:
+                self.on_targets(targets_data)
+            else:
+                self.explore()
         else:
-            # should go in exploration mode
-            self.stop()
+            print('Obstacle...')
 
     def ask_for_prediction(self, image):
         start = time()
@@ -129,7 +190,7 @@ class SmartThymio(Thymio, object):
 
         end = time()
 
-        # print('Prediction took {:.4f}'.format(end - start))
+        print('Prediction took {:.4f}'.format(end - start))
 
         return self.res
 
@@ -147,7 +208,7 @@ class SmartThymio(Thymio, object):
                 np_arr = np.fromstring(data.data, dtype=np.uint8)
                 image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
+                #
                 self.on_get_image_from_camera_success(compressed)
                 self.image = image
 
@@ -156,7 +217,7 @@ class SmartThymio(Thymio, object):
                 print(e)
         else:
             if self.draw and self.res: self.draw_image(self.image, res=self.res)
-
+        return
 
     def camera_callback(self, data):
         if self.should_send:
