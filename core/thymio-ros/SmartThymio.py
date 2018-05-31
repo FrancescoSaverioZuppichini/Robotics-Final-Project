@@ -4,7 +4,7 @@ import cv2
 from pprint import pprint
 import requests
 import rospy
-from utils import draw_boxes, unbox
+from utils import draw_boxes, unbox, rect_area
 import numpy as np
 import json
 from PID import PID
@@ -13,12 +13,15 @@ from utils import Params
 from time import time
 from time import sleep
 import threading
+from thymio_msgs.msg import Led
 
 IMAGE_SAVE_DIR = './image_save/'
 
 class SmartThymio(Thymio, object):
 
     def __init__(self, *args, **kwargs):
+        self.sensors_cache_values = np.zeros(7)
+
         super(SmartThymio, self).__init__(*args, **kwargs)
         self.bridge = CvBridge()
         self.should_send = True # avoid automatic fire to the server
@@ -27,7 +30,7 @@ class SmartThymio(Thymio, object):
         self.res = None
         self.global_step = 0
         self.camera_res  = (480,640)
-        self.target = ['dog','teddy bear']
+        self.target = ['dog','teddy bear', 'chair']
         self.angular_pid = PID(Kd=5, Ki=0, Kp=0.5)
         self.linear_pid = PID(Kd=5, Ki=0, Kp=0.5)
         self.object_pid = PID(Kd=3, Ki=0, Kp=0.5)
@@ -36,21 +39,19 @@ class SmartThymio(Thymio, object):
         self.last_elapsed_sensors = 0
 
         self.MAX_TO_WAIT = 0.2
+        self.FORWARD_VEL = 0.1
+
         self.p = threading.Thread()
         self.obstacle = False
-        self.sensors_cache_values = np.zeros(7)
-
+        self.N_LEDS = 5
         self.colors, self.class_names = self.get_model_info()
 
-
     def get_model_info(self):
-
         res = requests.get('{}/model'.format(self.HOST_URL)).json()
 
         return res['colors'], res['classes']
 
     def draw_image(self, image, res, boxes=True, save=False):
-
         if boxes:
             out_scores, out_boxes, out_classes, out_classes_idx = unbox(res.json())
 
@@ -69,6 +70,7 @@ class SmartThymio(Thymio, object):
 
     def find_targets_data_in_img(self, data, target):
         targets = list(filter(lambda x: x['class'] in target, data))
+
         return targets
 
     def get_class_data(seldf, data, class_name):
@@ -79,10 +81,11 @@ class SmartThymio(Thymio, object):
     def get_box(self, data):
         box = np.array(data['boxes'])
         box[box < 0] = 0  # prune negative
+
         return box
 
-
     def get_error(self, box):
+
         height, width = self.camera_res
         img_mid_p = width // 2
         top, left, bottom, right = box
@@ -92,14 +95,33 @@ class SmartThymio(Thymio, object):
 
         return err, offset
 
-    def on_target(self, target_data):
+    def on_target_turn_on_leds(self, box):
+        led_mask = np.zeros(self.N_LEDS)
+        _, left, _, right = box
+        height, width = self.camera_res
 
+        start_led = int(((left / width) / 100) * self.N_LEDS * 100)
+        end_led = int(((right / width) / 100) * self.N_LEDS * 100)
+
+        led_mask[start_led:end_led + 1] = 1
+        # remap the led to the correct Thymio's pins
+        mask = np.concatenate([led_mask[2:], np.zeros(3), led_mask[:2]])
+
+        self.turn_on_leds(mask)
+
+    def turn_on_leds(self, mask=None, id=0):
+        mask = np.zeros(8) if mask == None else mask
+
+        self.led_subscriber.publish(Led(values=mask, id=id))
+
+    def on_target(self, target_data):
+        print('Found {}').format(target_data['class'])
         box = self.get_box(target_data)
 
         err, offset = self.get_error(box)
 
-        width, _ = self.camera_res
-        err = err / width  # normalize in %
+        height, width = self.camera_res
+        err = err / height  # normalize in %
         dt = self.time_elapsed - self.last_elapsed
         ang_vel = self.object_pid.step(err, dt)
 
@@ -112,13 +134,13 @@ class SmartThymio(Thymio, object):
         self.last_elapsed = self.time_elapsed
 
         # ang_vel /= 10
+        self.on_target_turn_on_leds(box)
 
-        self.update_vel(Params(x=0.1), Params(z=-1 * ang_vel))
+        self.update_vel(Params(self.FORWARD_VEL), Params(z=-ang_vel))
 
     def on_receive_sensor_data(self, data, sensor_id, name):
         val = data.range
         max = data.max_range
-
 
         if(val == np.inf): val = 0
 
@@ -144,13 +166,15 @@ class SmartThymio(Thymio, object):
             self.last_elapsed_sensors = self.time_elapsed
 
             self.update_vel(Params(x=-vel), Params(z=-ang_vel))
-        # else: self.stop()
 
     def explore(self):
+        self.turn_on_leds()
         # rotate in place
         self.update_vel(Params(), Params(z=0.1))
 
     def select_target(self, targets, metric='closest'):
+        if metric == 'closest':
+            targets.sort(key=lambda x: -rect_area(x['boxes']))
         return targets[0]
 
     def on_targets(self, targets_data):
@@ -167,6 +191,7 @@ class SmartThymio(Thymio, object):
             if there_are_targets:
                 self.on_targets(targets_data)
             else:
+                # self.stop()
                 self.explore()
         else:
             print('Obstacle...')
@@ -184,13 +209,11 @@ class SmartThymio(Thymio, object):
 
         pred = self.res.json()['res']
 
-        # pprint(pred)
-
         self.on_prediction_success(pred)
 
         end = time()
 
-        print('Prediction took {:.4f}'.format(end - start))
+        # print('Prediction took {:.4f}'.format(end - start))
 
         return self.res
 
@@ -208,7 +231,7 @@ class SmartThymio(Thymio, object):
                 np_arr = np.fromstring(data.data, dtype=np.uint8)
                 image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                #
+
                 self.on_get_image_from_camera_success(compressed)
                 self.image = image
 

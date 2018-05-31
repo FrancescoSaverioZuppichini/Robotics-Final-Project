@@ -9,6 +9,7 @@ from math import cos, sin, asin, tan, atan2
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
 from sensor_msgs.msg import Range, Image, CompressedImage
+from thymio_msgs.msg import Led
 from std_srvs.srv import Empty
 from random import random
 
@@ -48,6 +49,7 @@ class Thymio:
         # self.camera_subscriber = rospy.Subscriber(self.name + '/camera/image_raw', Image, self.camera_callback, queue_size=1, buff_size=2**30)
         self.camera_subscriber = rospy.Subscriber(self.name + '/camera/image_raw/compressed', CompressedImage, self.camera_callback_compressed, queue_size=1, buff_size=2**24)
 
+        self.led_subscriber = rospy.Publisher(self.name + '/led', Led, queue_size=10)
 
         self.current_pose = Pose()
         self.current_twist = Twist()
