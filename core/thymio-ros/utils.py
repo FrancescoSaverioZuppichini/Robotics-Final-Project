@@ -67,3 +67,13 @@ def unbox(res):
     out_classes_idx = list(map(lambda x: x['class_idx'], res))
 
     return out_scores, out_boxes, out_classes, out_classes_idx
+
+
+def rect_area(rect):
+    top, left, bottom, right = rect
+    b = right - left
+    h = bottom - top
+
+
+    return b*h
+
