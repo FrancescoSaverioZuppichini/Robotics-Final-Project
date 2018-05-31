@@ -26,7 +26,7 @@
 %\usepackage{amssymb}  % assumes amsmath package installed
 
 \title{\LARGE \bf
-Object Detection Based Behaviour with YOLO on Thymio
+Object Detection-Based Behaviour using YOLO on Thymio
 }
 
 %\author{ \parbox{3 in}{\centering Huibert Kwakernaak*
@@ -58,21 +58,21 @@ Object Detection Based Behaviour with YOLO on Thymio
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-The ability of classify in booth space and domain objects is encoded in an enormous variety of species on the planet. Recently, deep learning approaches has been develop to make machine able to mimic the same task with interesting results. With this paper, we propose minimal architecture to archive the same goal using atwo wheels robots, Thymio, with a frontal camera mounted to act based on the object detected in the surrounding. 
+The ability to classify in booth space and domain objects is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to archive the same goal using a two wheels robots, the Thymio, with a mounted frontal camera in order to act based on the object detected in the surrounding. 
 \end{abstract}
 \section{Introduction}
-Find object in space by identify their identity and their coordinate is a basic task that almost each animal is able to accomplish by feeding the input of their eyes to the brain. The ability to solve this problem is extremely important in robotics where a machine needs to act accordingly based on its surrounding. With  our architecture, only the raw data from the camera are used as input to an Object Detection and the decision are based directly on the prediction without the need of any other sensor.
+Finding objects in space by identifying their identity and their coordinates is a basic task that almost each animal is able to accomplish by feeding the inputs from their eyes to the brain. The ability to solve this problem is extremely important in robotics, where a machine needs to act accordingly based on its surrounding. With our architecture, only the raw data from the camera are used as input to an Object Detection model and the decision are based directly on the prediction, without the need of any other sensor.
 
-The paper is structured as follow, we first describer the architecture by showing each individual part of the topology  and how they interact. Then, we discuss the challenges during the development process and finally we show the results.
+The paper is structured as follows: we will first describe the architecture by showing each individual part of the topology and how they interact; then, we will discuss the challenges during the development process and finally we will show the results.
 
 \section{Architecture}
 Our architecture is composed by:
 \begin{enumerate}
-	\item A robot with a mounted camera and onboard computer with a running ROS node
+	\item A robot with a mounted camera and an on-board computer with a running ROS node
 	\item A web server running the Object Detection model
 	\item A ROS node running on a local machine
 \end{enumerate}
-As robot, we used the \emph{MightyThymio} \cite{guzzi2018eaai}. A robot develop on top of the Thymio, a small mass-produced mobile usually used in primary  and secondary education. The MightyThymio has a powerful Odroid C1 on board, a 1GB quad-core ARM Linux machine, with a HD camera mounted on top. The authors also implemented a ROS node to communicate with it and open-sourced the code.
+As a robot, we used the \emph{MightyThymio} \cite{guzzi2018eaai}, which is a robot developed on top of the Thymio, a small mass-produced mobile robot usually used in primary and secondary education. The MightyThymio has a powerful Odroid C1 on board, a 1GB quad-core ARM Linux machine, with a HD camera mounted on top. The authors also implemented a ROS node to communicate with it and open-sourced the code.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{YOLO: REAL-TIME OBJECT DETECTION}
 
@@ -117,13 +117,6 @@ For our project, we used the third version of YOLO, or YOLOv3 \cite{Yolo3}, whic
 %\bibitem{c18} J. Williams, ÒNarrow-band analyzer (Thesis or Dissertation style),Ó Ph.D. dissertation, Dept. Elect. Eng., Harvard Univ., Cambridge, MA, 1993. 
 %\bibitem{c19} N. Kawasaki, ÒParametric study of thermal and chemical nonequilibrium nozzle flow,Ó M.S. thesis, Dept. Electron. Eng., Osaka Univ., Osaka, Japan, 1993.
 %\bibitem{c20} J. P. Wilkinson, ÒNonlinear resonant circuit devices (Patent style),Ó U.S. Patent 3 624 12, July 16, 1990. 
-
-
-
-
-
-
-\end{thebibliography}
 
 
 
