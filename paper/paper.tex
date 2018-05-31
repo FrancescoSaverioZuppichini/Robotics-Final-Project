@@ -14,7 +14,8 @@
 % See the \addtolength command later in the file to balance the column lengths
 % on the last page of the document
 
-
+\usepackage{biblatex}
+\bibliography{paper}
 
 % The following packages can be found on http:\\www.ctan.org
 %\usepackage{graphics} % for pdf, bitmapped graphics files
@@ -43,14 +44,7 @@ Object Detection Based Behaviour with YOLO on Thymio
 %         {\tt\small pmisra@cs.wright.edu}}
 %}
 
-\author{Francesco Saverio Zuppichini$^{1}$ and Alessia Ruggeri$^{2}$% <-this % stops a space
-\thanks{$^{1}$H. Kwakernaak is with Faculty of Electrical Engineering, Mathematics and Computer Science,
-        University of Twente, 7500 AE Enschede, The Netherlands
-        {\tt\small h.kwakernaak at papercept.net}}%
-\thanks{$^{2}$P. Misra is with the Department of Electrical Engineering, Wright State University,
-        Dayton, OH 45435, USA
-        {\tt\small p.misra at ieee.org}}%
-}
+\author{Francesco Saverio Zuppichini$^{1}$ and Alessia Ruggeri$^{2}$}% <-this % stops a space
 
 
 \begin{document}
@@ -72,24 +66,35 @@ Find object in space by identify their identity and their coordinate is a basic 
 The paper is structured as follow, we first describer the architecture by showing each individual part of the topology  and how they interact. Then, we discuss the challenges during the development process and finally we show the results.
 
 \section{Architecture}
+Our architecture is composed by:
+\begin{enumerate}
+	\item A robot with a mounted camera and onboard computer with a running ROS node
+	\item A web server running the Object Detection model
+	\item A ROS node running on a local machine
+\end{enumerate}
+As robot, we used the \emph{MightyThymio} \cite{guzzi2018eaai}. A robot develop on top of the Thymio, a small mass-produced mobile usually used in primary  and secondary education. The MightyThymio has a powerful Odroid C1 on board, a 1GB quad-core ARM Linux machine, with a HD camera mounted on top. The authors also implemented a ROS node to communicate with it and open-sourced the code.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{YOLO: REAL-TIME OBJECT DETECTION}
 
-YOLO is a trained model for real-time object detection. While prior work on object detection repurposes classifiers to perform detection, YOLO handle the object detection as a regression problem to spatially separated bounding boxes and associated class probabilities. YOLO avoids resorting to complex pipelines that are slow and hard to optimize; instead, it uses a single convolutional neural network that simultaneously predicts multiple bounding boxes and class probabilities for those boxes. Using YOLO, You Only Look Once at an image to predict what objects are present and where they are.
+YOLO \cite{DBLP:conf/cvpr/RedmonDGF16} is a trained model for real-time object detection. While prior work on object detection repurposes classifiers to perform detection, YOLO handle the object detection as a regression problem to spatially separated bounding boxes and associated class probabilities. YOLO avoids resorting to complex pipelines that are slow and hard to optimize; instead, it uses a single convolutional neural network that simultaneously predicts multiple bounding boxes and class probabilities for those boxes. Using YOLO, You Only Look Once at an image to predict what objects are present and where they are.
 
 YOLO neural network uses features from the entire image to predict each bounding box simultaneously across all classes. The convolutional neural network contains 24 convolutional layers, that extract features from the image, followed by 2 fully connected layers, whose aim is to predict the output probabilities and coordinates. The system divides the input image into an $S \times S$ grid; if the center of an object falls into a grid cell, that grid cell is responsible for detecting that object. Each grid cell predicts $B$ bounding boxes and confidence scores for those boxes. These confidence scores reflect how confident the model is that the box contains an object and also how accurate it thinks the box is that it predicts. There is also a fast version of YOLO, designed with a neural network with fewer convolutional leayers and fewer filters in those layers.
 
 YOLO is extremely fast, it reason globally about the image when making predictions, it learns generalizable representations of objects and it is open source. YOLO still lags behind other detection systems in accuracy; while it can quickly identify object in images, it struggles to precisely localize some objects, especially small ones. However, it is still the state-of-the-art model for object detection in real-time.
 
-For our project, we used the third version of YOLO, or YOLOv3, which has been improved by making it a little bigger than before, but more accurate.
+For our project, we used the third version of YOLO, or YOLOv3 \cite{Yolo3}, which has been improved by making it a little bigger than before, but more accurate.
 
 \section{Results}
 \section{Conclusion}
 
-\begin{thebibliography}{99}
-%%%%% Our bibliography
-\bibitem{c1} Y. Redmon, S. Divvala, R. Girshick, and A. Farhadi, ÒYou Only Look Once: Unified, Real-Time Object Detection,Ó University of Washington, Allen Institute for AI, Facebook AI Research, May 2016, http://pjreddie.com/yolo/.
-\bibitem{c2} Y. Redmon, and A. Farhadi, ÒYOLOv3: An Incremental Improvement,Ó University of Washington, Apr 2018.
+\printbibliography
+
+%\begin{thebibliography}{99}
+%%%%%% Our bibliography
+%\bibitem{c1} Y. Redmon, S. Divvala, R. Girshick, and A. Farhadi, ÒYou Only Look Once: Unified, Real-Time Object Detection,Ó University of Washington, Allen Institute for AI, Facebook AI Research, May 2016, http://pjreddie.com/yolo/.
+%\bibitem{c2} Y. Redmon, and A. Farhadi, ÒYOLOv3: An Incremental Improvement,Ó University of Washington, Apr 2018.
+%
+%\bibitem{c3} Guzzi, Jérôme and Giusti, Alessandro and Di Caro, Gianni A. and Gambardella, Luca M.,Mighty Thymio for Higher-Level Robotics Education, IDSIA, 2018.
 
 %%%%%  Bibliography templates
 %\bibitem{c1} G. O. Young, ÒSynthetic structure of industrial plastics (Book style with paper title and editor),Ó 	in Plastics, 2nd ed. vol. 3, J. Peters, Ed.  New York: McGraw-Hill, 1964, pp. 15Ð64.
