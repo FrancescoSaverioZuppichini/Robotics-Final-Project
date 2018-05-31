@@ -38,12 +38,11 @@ class Thymio:
         # when a message of type Pose is received.
         self.pose_subscriber = rospy.Subscriber(self.name + '/odom',
                                                 Odometry, self.update_state)
-        self.sensors_names = ['rear_left','rear_right','left','center_left','center', 'center_right' ,'right']
+        self.sensors_names = ['right', 'center_right', 'center', 'center_left', 'left', 'rear_right', 'rear_left']
 
         self.sensors_subscribers = [rospy.Subscriber(self.name + '/proximity/' + sensor_name,
         Range,
         callback(self.sensors_callback,i,sensor_name)) for i,sensor_name in enumerate(self.sensors_names)]
-
 
 
         # self.camera_subscriber = rospy.Subscriber(self.name + '/camera/image_raw', Image, self.camera_callback, queue_size=1, buff_size=2**30)
@@ -60,10 +59,14 @@ class Thymio:
         self.sensors_cache[name] = data
 
         try:
+            self.on_receive_sensor_data(data, sensor_id, name)
             for hook in self.hooks:
                 hook.on_receive_sensor_data(self, data, sensor_id, name)
         except KeyError:
             pass
+
+    def on_receive_sensor_data(self, data, sensor_id, name):
+        pass
 
     def camera_callback(self, data):
         for hook in self.hooks:
