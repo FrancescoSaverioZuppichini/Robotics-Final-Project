@@ -26,7 +26,7 @@ while True:
         src = cv2.imread(img_path)
         image = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
 
-        res = requests.post('{}/prediction'.format(HOST_URL), json = { 'image' : image.tolist() })
+        res = requests.post('{}/prediction'.format(HOST_URL), json = { 'image' : image.tolist(), 'size' : (192,192) })
 
         out_scores, out_boxes, out_classes, out_classes_idx = unbox(res.json())
 

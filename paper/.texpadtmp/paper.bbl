@@ -1,0 +1,118 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.8 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \sortlist[entry]{nty/global/}
+    \entry{guzzi2018eaai}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=18fb6cc950b727f9f4db27550e07650a}{%
+           family={Guzzi},
+           familyi={G\bibinitperiod},
+           given={Jerome},
+           giveni={J\bibinitperiod}}}%
+        {{hash=af137747f0b7c60b5f19a8827f74f728}{%
+           family={Giusti},
+           familyi={G\bibinitperiod},
+           given={Alessandro},
+           giveni={A\bibinitperiod}}}%
+        {{hash=24b2ea0e2fd17477cd0be7abbf006125}{%
+           family={Di\bibnamedelima Caro},
+           familyi={D\bibinitperiod\bibinitdelim C\bibinitperiod},
+           given={Gianni\bibnamedelima A.},
+           giveni={G\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=0276de8dfc509704f49d2de088715873}{%
+           family={Gambardella},
+           familyi={G\bibinitperiod},
+           given={Luca\bibnamedelima M.},
+           giveni={L\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{51764b31860582cd6c9019b66f368b79}
+      \strng{fullhash}{a5675c3170f6f68ef955e049d043c74d}
+      \strng{authornamehash}{51764b31860582cd6c9019b66f368b79}
+      \strng{authorfullhash}{a5675c3170f6f68ef955e049d043c74d}
+      \field{sortinit}{G}
+      \field{sortinithash}{618d986594b7198ba52cf8b00d348f3f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{AAAI}
+      \field{title}{Mighty Thymio for Higher-Level Robotics Education}
+      \field{year}{2018}
+    \endentry
+    \entry{Yolo3}{inproceedings}{}
+      \name{author}{2}{}{%
+        {{hash=99bced2e56a5253f3fe98a5f04e6d9b2}{%
+           family={Redmon},
+           familyi={R\bibinitperiod},
+           given={Joseph},
+           giveni={J\bibinitperiod}}}%
+        {{hash=396c6ddedb6f986906fc3e4994d19974}{%
+           family={Farhadi},
+           familyi={F\bibinitperiod},
+           given={Ali},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{e3b480c56f52be95ad68ce67e9708174}
+      \strng{fullhash}{e3b480c56f52be95ad68ce67e9708174}
+      \strng{authornamehash}{e3b480c56f52be95ad68ce67e9708174}
+      \strng{authorfullhash}{e3b480c56f52be95ad68ce67e9708174}
+      \field{sortinit}{R}
+      \field{sortinithash}{c15bc8eb6936bc6b3c8baa9e8575af53}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{YOLOv3: An Incremental Improvement}
+      \field{year}{2018}
+    \endentry
+    \entry{DBLP:conf/cvpr/RedmonDGF16}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=99bced2e56a5253f3fe98a5f04e6d9b2}{%
+           family={Redmon},
+           familyi={R\bibinitperiod},
+           given={Joseph},
+           giveni={J\bibinitperiod}}}%
+        {{hash=df9c7ca421e3610d048bb919a38a83f6}{%
+           family={Divvala},
+           familyi={D\bibinitperiod},
+           given={Santosh\bibnamedelima Kumar},
+           giveni={S\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=008bd42dfafb05123122b3d372206abc}{%
+           family={Girshick},
+           familyi={G\bibinitperiod},
+           given={Ross\bibnamedelima B.},
+           giveni={R\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=396c6ddedb6f986906fc3e4994d19974}{%
+           family={Farhadi},
+           familyi={F\bibinitperiod},
+           given={Ali},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{e1203a0044715040adeb8c5079ee645a}
+      \strng{fullhash}{88d96cf03ffbbfee44cf8478656f0953}
+      \strng{authornamehash}{e1203a0044715040adeb8c5079ee645a}
+      \strng{authorfullhash}{88d96cf03ffbbfee44cf8478656f0953}
+      \field{sortinit}{R}
+      \field{sortinithash}{c15bc8eb6936bc6b3c8baa9e8575af53}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{You Only Look Once: Unified, Real-Time Object Detection}
+      \field{year}{2016}
+    \endentry
+  \endsortlist
+\endrefsection
+\endinput
+

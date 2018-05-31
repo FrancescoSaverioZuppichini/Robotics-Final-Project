@@ -31,6 +31,7 @@ class YOLO(object):
         self.anchors = self._get_anchors()
         self.sess = K.get_session()
         self.model_image_size = (224, 224) # fixed size or (None, None)
+
         self.is_fixed_size = self.model_image_size != (None, None)
         self.boxes, self.scores, self.classes = self.generate()
 
@@ -75,10 +76,11 @@ class YOLO(object):
         return boxes, scores, classes
 
 
-    def predict(self, image, draw=False):
-        image = Image.fromarray(np.uint8(image), 'RGB')
+    def predict(self, image, draw=False, size=(416,416)):
+        self.model_image_size = size
 
         start = time.time()
+        image = Image.fromarray(np.uint8(image), 'RGB')
 
         if self.is_fixed_size:
             assert self.model_image_size[0] % 32 == 0, 'Multiples of 32 required'

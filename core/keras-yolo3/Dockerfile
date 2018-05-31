@@ -1,46 +1,110 @@
-# Use an official Python runtime as a parent image
-FROM python:3.6-slim
+FROM ubuntu:16.04
 
-ADD . .
-#RUN apt-get update && apt-get install build-essential -y && apt-get install wget -y
+LABEL maintainer="Craig Citro <craigcitro@google.com>"
 
-# RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install gcc g++ gfortran wget cpio && \
-#   cd /tmp && \
-#   wget -q http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/12414/l_mkl_2018.1.163.tgz && \
-#   tar -xzf l_mkl_2018.1.163.tgz && \
-#   cd l_mkl_2018.1.163 && \
-#   sed -i 's/ACCEPT_EULA=decline/ACCEPT_EULA=accept/g' silent.cfg && \
-#   sed -i 's/ARCH_SELECTED=ALL/ARCH_SELECTED=INTEL64/g' silent.cfg && \
-# #  sed -i 's/COMPONENTS=DEFAULTS/COMPONENTS=;intel-comp-l-all-vars__noarch;intel-openmp-l-all__x86_64;intel-openmp-l-ps-libs__x86_64;intel-openmp-l-ps-libs-jp__x86_64;intel-tbb-libs__noarch;intel-mkl-common__noarch;intel-mkl-sta-common__noarch;intel-mkl__x86_64;intel-mkl-rt__x86_64;intel-mkl-ps-rt-jp__x86_64;intel-mkl-doc__noarch;intel-mkl-ps-doc__noarch;intel-mkl-ps-doc-jp__noarch;intel-mkl-gnu__x86_64;intel-mkl-gnu-rt__x86_64;intel-mkl-ps-common__noarch;intel-mkl-ps-common-jp__noarch;intel-mkl-ps-common-64bit__x86_64;intel-mkl-common-c__noarch;intel-mkl-common-c-64bit__x86_64;intel-mkl-ps-common-c__noarch;intel-mkl-doc-c__noarch;intel-mkl-ps-doc-c-jp__noarch;intel-mkl-ps-ss-tbb__x86_64;intel-mkl-ps-ss-tbb-rt__x86_64;intel-mkl-gnu-c__x86_64;intel-mkl-ps-common-f__noarch;intel-mkl-ps-common-f-64bit__x86_64;intel-mkl-ps-doc-f__noarch;intel-mkl-ps-doc-f-jp__noarch;intel-mkl-ps-gnu-f-rt__x86_64;intel-mkl-ps-gnu-f__x86_64;intel-mkl-ps-f95-common__noarch;intel-mkl-ps-f__x86_64;intel-mkl-psxe__noarch;intel-psxe-common__noarch;intel-psxe-common-doc__noarch;intel-compxe-pset/g' silent.cfg && \
-#   sed -i 's/COMPONENTS=DEFAULTS/COMPONENTS=;intel-comp-l-all-vars__noarch;intel-comp-nomcu-vars__noarch;intel-openmp__x86_64;intel-tbb-libs__x86_64;intel-mkl-common__noarch;intel-mkl-installer-license__noarch;intel-mkl-core__x86_64;intel-mkl-core-rt__x86_64;intel-mkl-doc__noarch;intel-mkl-doc-ps__noarch;intel-mkl-gnu__x86_64;intel-mkl-gnu-rt__x86_64;intel-mkl-common-ps__noarch;intel-mkl-core-ps__x86_64;intel-mkl-common-c__noarch;intel-mkl-core-c__x86_64;intel-mkl-common-c-ps__noarch;intel-mkl-tbb__x86_64;intel-mkl-tbb-rt__x86_64;intel-mkl-gnu-c__x86_64;intel-mkl-common-f__noarch;intel-mkl-core-f__x86_64;intel-mkl-gnu-f-rt__x86_64;intel-mkl-gnu-f__x86_64;intel-mkl-f95-common__noarch;intel-mkl-f__x86_64;intel-mkl-psxe__noarch;intel-psxe-common__noarch;intel-psxe-common-doc__noarch;intel-compxe-pset/g' silent.cfg && \
-#   ./install.sh -s silent.cfg && \
-#   cd .. && rm -rf * && \
-#   rm -rf /opt/intel/.*.log /opt/intel/compilers_and_libraries_2018.1.163/licensing && \
-#   echo "/opt/intel/mkl/lib/intel64" >> /etc/ld.so.conf.d/intel.conf && \
-#   ldconfig && \
-#   echo "source /opt/intel/mkl/bin/mklvars.sh intel64" >> /etc/bash.bashrc
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        git \
+        libcurl3-dev \
+        libfreetype6-dev \
+        libhdf5-serial-dev \
+        libpng12-dev \
+        libzmq3-dev \
+        pkg-config \
+        python-dev \
+        rsync \
+        software-properties-common \
+        unzip \
+        zip \
+        zlib1g-dev \
+        openjdk-8-jdk \
+        openjdk-8-jre-headless \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# RUN apt-get install cmake -y &&  apt-get install git && \
-#     git clone https://github.com/01org/mkl-dnn.git && \
-#     cd mkl-dnn/scripts && ./prepare_mkl.sh && cd .. && \
-#     mkdir -p build && cd build && cmake .. && make && \
-#     make install && \
-#     echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib' >> ~/.bashrc
-#RUN apt-get install libstdc++6 -y
-#RUN pip install --ignore-installed --upgrade  tensorflow-1.8.0-cp36-cp36m-linux_x86_64.whl
+RUN curl -fSsL -O https://bootstrap.pypa.io/get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py
+
+RUN pip --no-cache-dir install \
+        Pillow \
+        h5py \
+        ipykernel \
+        jupyter \
+        matplotlib \
+        mock \
+        numpy \
+        scipy \
+        sklearn \
+        pandas \
+        && \
+    python -m ipykernel.kernelspec
+
+# RUN ln -s -f /usr/bin/python3 /usr/bin/python#
+
+# Set up our notebook config.
+# COPY jupyter_notebook_config.py /root/.jupyter/
+
+# Jupyter has issues with being run directly:
+#   https://github.com/ipython/ipython/issues/7062
+# We just add a little wrapper script.
+# COPY run_jupyter.sh /
+
+# Set up Bazel.
+
+# Running bazel inside a `docker build` command causes trouble, cf:
+#   https://github.com/bazelbuild/bazel/issues/134
+# The easiest solution is to set up a bazelrc file forcing --batch.
+RUN echo "startup --batch" >>/etc/bazel.bazelrc
+# Similarly, we need to workaround sandboxing issues:
+#   https://github.com/bazelbuild/bazel/issues/418
+RUN echo "build --spawn_strategy=standalone --genrule_strategy=standalone" \
+    >>/etc/bazel.bazelrc
+# Install the most recent bazel release.
+ENV BAZEL_VERSION 0.11.0
+WORKDIR /
+RUN mkdir /bazel && \
+    cd /bazel && \
+    curl -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36" -fSsL -O https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh && \
+    curl -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36" -fSsL -o /bazel/LICENSE.txt https://raw.githubusercontent.com/bazelbuild/bazel/master/LICENSE && \
+    chmod +x bazel-*.sh && \
+    ./bazel-$BAZEL_VERSION-installer-linux-x86_64.sh && \
+    cd / && \
+    rm -f /bazel/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
+
+# Download and build TensorFlow.
+WORKDIR /tensorflow
+RUN git clone --branch=r1.8 --depth=1 https://github.com/tensorflow/tensorflow.git .
+
+# TODO(craigcitro): Don't install the pip package, since it makes it
+# more difficult to experiment with local changes. Instead, just add
+# the built directory to the path.
+
+ENV CI_BUILD_PYTHON python
+
+RUN tensorflow/tools/ci_build/builds/configured CPU \
+    bazel build -c opt --copt=-mavx --cxxopt="-D_GLIBCXX_USE_CXX11_ABI=0" \
+        # For optimized builds appropriate for the hardware platform of your choosing, uncomment below...
+        # For ivy-bridge or sandy-bridge
+        # --copt=-march="ivybridge" \
+        # for haswell, broadwell, or skylake
+        # --copt=-march="haswell" \
+        tensorflow/tools/pip_package:build_pip_package && \
+    bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/pip && \
+    pip --no-cache-dir install --upgrade /tmp/pip/tensorflow-*.whl && \
+    rm -rf /tmp/pip && \
+    rm -rf /root/.cache
+# Clean up pip wheel and Bazel cache when done.
+
+# TensorBoard
+EXPOSE 6006
+# IPython
+EXPOSE 8888
+ADD . /root
+WORKDIR /root
+
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
-#RUN wget https://repo.continuum.io/archive/Anaconda3-4.2.0-Linux-x86_64.sh &&\
-#    bash Anaconda3-4.2.0-Linux-x86_64.sh -b -p ~/anaconda && \
-#    rm Anaconda3-4.2.0-Linux-x86_64.sh && \
-#    echo 'export PATH="~/anaconda/bin:$PATH"' >> ~/.bashrc  &&\
-#    /bin/bash -c "source ~/.bashrc" && \
-#    /bin/bash -c "conda update conda"
-#
-#RUN /bin/bash -c "conda install libgcc"
-#
-#RUN apt-get update && apt-get install -y libgtk2.0-dev
 
-EXPOSE 8080
-
-# Run app.py when the container launches
 CMD ["python", "app.py"]
