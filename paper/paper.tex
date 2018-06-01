@@ -14,9 +14,12 @@
 % See the \addtolength command later in the file to balance the column lengths
 % on the last page of the document
 
+\usepackage{listings}
 \usepackage{biblatex}
 \bibliography{paper}
-
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{graphicx}
 % The following packages can be found on http:\\www.ctan.org
 %\usepackage{graphics} % for pdf, bitmapped graphics files
 %\usepackage{epsfig} % for postscript graphics files
@@ -24,6 +27,13 @@
 %\usepackage{times} % assumes new font selection scheme installed
 %\usepackage{amsmath} % assumes amsmath package installed
 %\usepackage{amssymb}  % assumes amsmath package installed
+\lstset{
+%  basicstyle=\ttfamily,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+  basicstyle=\small
+}
 
 \title{\LARGE \bf
 Object Detection-Based Behaviour using YOLO on Thymio
@@ -63,7 +73,9 @@ The ability to classify objects in both space and domain is encoded in an enormo
 
 \section{Introduction}
 
-Finding objects in space by identifying their identity and their coordinates is a basic task that almost each animal is able to accomplish by feeding the inputs from their eyes to the brain. The ability to solve this problem is extremely important in robotics, where a machine needs to act accordingly based on its surrounding. With our architecture, only the raw data from the camera are used as input to an Object Detection model and the decision are based directly on the prediction, without the need of any other sensor.
+Finding objects in space by identifying their identity and their coordinates is a basic task that almost each animal is able to accomplish. The ability to solve this problem is extremely important in robotics, where a machine needs to act accordingly based on its surrounding. With our architecture, only the raw data from the camera are used as input to an Object Detection model and the decision are based directly on the prediction, without the need of any other sensor.
+
+Specifically, our robot will wait for an user-specified class, e.g. \emph{dog}, and, when found, it moves towards the object by keeping it in the middle of its view. We also implemented a PID based algorithm to avoid obstacles and properly stop in front of founded item.
 
 The paper is structured as follows: we will first describe the architecture by showing each individual part of the topology and how they interact; then, we will discuss the challenges during the development process and finally we will show the results.
 
@@ -80,6 +92,11 @@ As a robot, we used the \emph{MightyThymio} \cite{guzzi2018eaai}, which is a rob
 
 In our project, the MightyThymio has the same configuration proposed in \cite{guzzi2018eaai}. Briefly, the on-board computer expose the Thymios sensors through ROS. Thus, another ROS node can publish and subscribe in order to communicate with its sensors. For example, we can subscribe to the \emph{camera sensors} to get information from the proximity sensors to avoid hitting obstacles. Also, we can simply subscribe to the camera's topic to get both compressed and uncompressed images. 
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{assembled_myt}	
+\caption{The MightyThymio}
+\end{figure}
 %Subscribe thyme event of camera, from whom compressed images, encoded in strings, then we send to the server, the server decode the compressed images and send prediction. After prediction, if class is target, for example person, the server send the person and bounding box. If the timeo see the person, it moves verso the person keeping her in the centre. So if the person moves, the timeo moves to keep the bounding box in the centre of the camera. So using only the image we can tell timeo to follow a target, without knowing the position of target or of thimeo.
 %The rod node is a module that can be put where you want.
 
@@ -89,10 +106,33 @@ We created a new ROS node to communicate with the running node on the MightyThym
 \subsection*{Object Detection REST-API Web Server}
 We used pre-trained YOLO\cite{DBLP:conf/cvpr/RedmonDGF16}, the state-of-the-art real-time object detection model, to predict the bounding boxes for each class. The model was trained on the COCO(Common Object in Context)\cite{COCO} Dataset, that contains 80 classes. 
 
-On top of that, we built a REST-API Web Server using Python3 and Flask, a micro-framework to create Web Servers, to make the model accessible from the Web.
+On top of that, we built a REST-API Web Server using Python3 and Flask, a micro-framework to create Web Servers, to make the model accessible from the Web. We decided to decouple the logic behind the robot behaviour and the model in order to make our architecture more scalable. For instance, if needed, we can deploy our model in the cloud while keeping the running ROS code intact. 
 
-We decided to decouple the logic behind the robot behaviour and the model in order to make our architecture more scalable. For instance, if needed, we can deploy our model in the cloud while keeping the running ROS code intact. 
-
+We following endpoints are available:
+\begin{lstlisting}
+GET /model
+POST /prediction  --image --size --compress
+\end{lstlisting}
+Each of them returns a JSON serialised response. The \texttt{/model} endpoint is used to get informations about the model on the server. These informations are the classes and the colour associated to each one of them. It follows a snapshot of the response:
+\begin{lstlisting}
+{
+    "classes": [ "person", "bicycle", "car", "motorbike", "aeroplane", ... ]
+    "colors": [[255, 38, 0], [0, 63, 255], ... ]   
+ }
+\end{lstlisting}
+The client can get a prediction by sending and image to \texttt{/prediction}. Also, it can specify whatever the  image is compressed or no and if the server should resize it before feed it to the model. In our case, we send a compressed image directly taken from the MightyThymio after subscribed to the \texttt{/camera/compressed} topic and we define the resize size to (190,190). The small size is due low computational power since we had no access to a GPU. The response looks like:
+\begin{lstlisting}
+{'res': [{'boxes': [96.21580505371094,
+                    219.6134033203125,
+                    437.66387939453125,
+                    594.16748046875],
+          'class': 'bicycle',
+          'class_idx': 1,
+          'score': 0.48406994342803955}, ...
+         ]
+ 'time': 0.174407958984375}
+\end{lstlisting}
+For each detected class we return the bounding boxes, the \emph{boxes} key of the json, the class name, its index and the score, the confidence of the model. Each box is composed by the top, left, bottom and right coordinate of the bounding box with respect to the left of the image and the top. In the above example, the bicyle's bounding starts $96$ pixels from the left and $219$ from the top.
 \section{}
 
 \subsection{YOLO: Real-Time Object Detection}
@@ -105,7 +145,60 @@ YOLO is extremely fast, it reason globally about the image when making predictio
 
 For our project, we used the third version of YOLO, or YOLOv3 \cite{Yolo3}, which has been improved by making it a little bigger than before, but more accurate.
 
-\section{Code}
+\section{Implementation}
+We design our ROS node to find object and follow them until it is close enough. In addition, we also implemented a PID based algorithm to avoid obstacle and to stop before crash into the target object. From an high level view, the robot can be represented as a three-state machine.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{images/state}
+\caption{State Machine}
+\end{figure}
+Thus, at any time the machine can be \textbf{only} in one of the three states: \emph{exploration}, \emph{obstacle} and \emph{target found}. 
+
+\paragraph{Exploration} The robot starts to spin on itself with a fixed angular velocity to scan the surrounding until it finds the target or it detect an obstacle.
+\paragraph{Target Found} When we find the object we are looking for, we start moving towards it by keeping the its bounding box in the camera's center. We used a Proportional Integral Derivative, PID, controller to select the correct angular velocity. Given the camera's image and the bounding box we define the error at time $t$ as:
+\begin{equation}
+e_t =  (l_b + \frac{w_b}{2}) - \frac{w_c}{2}
+\end{equation}
+Where, $w_c$ is the camera's image width, in our case 640, $l_b$ and $w_b$ are the left component and the width of target's bounding box respectively. To find $w_b$ we need to just subtract the the left and right component of the box. We are not taking the absolute value of the error since the sign is used to decide in which direction to turn. Before feeding  the error to the PID controller we normalise it between zero and one by dividing by $w_c$, otherwise we should have defined a very small proportional parameter for the PID. 
+
+After we calculate the error for the current box, we feed it to a PID with a proportional parameter of $0.5$, and integral of $0$ and a derivative of $3$. However, even if we did not do any hyperparameter search, we notice that even with smaller values of the derivative component of the PID the robot works properly. 
+
+The following figure shows the error for each frame given different position of the target class \emph{bottle}.
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=\linewidth]{images/frame_error.png}
+\end{center}	
+\begin{center}
+\includegraphics[width=0.25\linewidth]{images/bottle/1}	
+\includegraphics[width=0.25\linewidth]{images/bottle/2}	
+\includegraphics[width=0.25\linewidth]{images/bottle/3}		
+\end{center}
+\caption{Bounding Box Error}
+\end{figure}
+The error is bigger when the bottle is on the left on the right and it is zero when it is in the center of the image. We used it as angular velocity in order to keep the robot pointed to the target object. We move it forward with a fixed linear velocity of $0.1$. 
+
+\paragraph{Obstacle} When the Thymio's proximity sensors of the Thymios, five in the front and two in the back, detect something it stops any activity and goes into the \emph{Obstacle} state. We implemented a simple yet effective PID controllers based algorithm to move the Thymio await from any object in from of it. 
+We defined two PIDs, one for the linear velocity and one for the angular. The errors are $e_l$ for the linear PID and $e_a$ for the angular PID, defined as follow. We denote the front sensor set as $S_f$ and the rear sensor set as $S_r$, where each element in the set is a double representing the value from the sensor. In out case, $|S_f| = 5$ and $|S_r|=2$.
+\begin{align}
+	e_l &= \limits\sum_{i=0}^{|S_f|} S_f(i) - \limits\sum_{i = 0}^{|R_f|} R_f(i) \\
+	e_a &= (\limits\sum_{i=0}^{\frac{|S_f|}{2}} S_f(i) - \limits\sum_{i = \frac{|S_f|}{2} }^{|S_f|} S_f(i)) - 
+	(\limits\sum_{i=0}^{\frac{|R_f|}{2}} R_f(i) - \limits\sum_{i = \frac{|R_f|}{2} }^{|R_f|} R_f(i))
+	\end{align}
+
+Also, we turn on the five frontal Thymio's LED as user feedback.The number and position of the LEDs are based on the width of target's bounding box. For example, a big object on the left side will turn on two LEDs, while a smaller one only  one. The follow picture shows an example where the robot is looking for a \emph{cup}:
+\begin{figure}[H]
+\begin{center}
+	
+\includegraphics[width=0.25\linewidth]{images/leds/1}	
+\includegraphics[width=0.25\linewidth]{images/leds/2}	
+\includegraphics[width=0.25\linewidth]{images/leds/3}	
+\end{center}
+\begin{center}
+\includegraphics[width=0.25\linewidth]{images/leds/4}	
+\includegraphics[width=0.25\linewidth]{images/leds/5}
+\end{center}
+\caption{On board LEDs}
+\end{figure}
 
 \section{Server}
 
