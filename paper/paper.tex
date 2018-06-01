@@ -63,7 +63,7 @@ The ability to classify objects in both space and domain is encoded in an enormo
 \section{Introduction}
 Finding objects in space by identifying their identity and their coordinates is a basic task that almost every animal is able to accomplish. The ability to solve this problem is extremely important in robotics, where a machine needs to act based on its surrounding.  We implemented an architecture, running on ROS, that is able to find selected target objects through YOLO, a real-time object detection model,  by only using a cheap camera.
 
-Specifically, our robot will wait for a user-specified class, e.g. \emph{dog}, and, when found, it moves towards the object by keeping it in the middle of its view. We also implemented a PID-based algorithm to avoid obstacles and properly stop in front of the founded item.
+Specifically, our robot will wait for a user-specified class, e.g. \emph{dog}, and, when it finds it using the object detecttion model on the camera image, it moves towards the object by keeping it in the middle of its view. We also implemented a PID-based algorithm to avoid obstacles and properly stop in front of the founded item.
 
 The paper is structured as follows: we will first describe the architecture by showing each individual part of the topology and how they interact; then, we will discuss the challenges during the development process and, finally, we will show the results.
 
@@ -215,10 +215,9 @@ As a user feedback, we turn on the five frontal Thymio's LEDs. The number and po
 \end{center}
 \caption{On board LEDs}
 \end{figure}
-A video showing the point of view of the Thymio while moving towards a \emph{cup} can be found at 
-
+A video showing the point of view of the Thymio while moving towards a \emph{cup} can be found \href{https://drive.google.com/open?id=1tZJpsfvfZGCGxunPWGHa3pLJnMj5mfOd}{here}\footnote{\texttt{https://drive.google.com/open?id=1tZJpsfvfZGCGxunPWGHa3pLJnMj5mfOd}}, and the third person view \href{https://drive.google.com/open?id=1Y5PMDQD8Aw0vxOK5yE5YwfiWLsMvXp-t}{here}\footnote{\texttt{https://drive.google.com/open?id=1Y5PMDQD8Aw0vxOK5yE5YwfiWLsMvXp-t}}.
 \section{Conclusion}
-In this paper, we presented a light and scalable architecture that uses a real-time Object Detection model to correctly find objects in the surrounding environment and to perform actions based on them. Moreover, because the only  hardware constraint is the camera, our work can be used into similar robots running ROS  to extend their functionalities. Furthermore, since we used YOLO to perform the classification task, the model can be easily re-trained with other classes to increase the context domain. This symbiosis between Machine Learning and Robotics highlights the power of both areas by creating new interesting use cases and scenarios in which both disciplines can shine.
+In this paper, we presented a light and scalable architecture that uses a real-time Object Detection model to correctly find objects in the surrounding environment and to perform actions based on them. Moreover, because the only  hardware constraint is the camera, our work can be used into similar robots running ROS  to extend their functionalities. Furthermore, since we used YOLO to perform the classification task, the model can be easily re-trained with other classes to increase the context domain. This symbiosis between Deep Learning and Robotics highlights the power of both areas by creating new interesting use cases and scenarios in which both disciplines can shine.
 
 \printbibliography
 

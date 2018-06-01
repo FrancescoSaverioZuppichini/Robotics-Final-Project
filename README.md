@@ -15,3 +15,4 @@ Start the web server by running `python3 app.py`. You server will be accesible a
 
 ### ROS
 You need to install ROS. Connect to the Tymio's wifi and run `python ./core/thymio-ros/main.py`.
+
