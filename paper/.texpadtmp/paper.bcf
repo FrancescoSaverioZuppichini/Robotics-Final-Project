@@ -2143,9 +2143,13 @@
     <bcf:datasource type="file" datatype="bibtex">paper.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
-    <bcf:citekey order="1">guzzi2018eaai</bcf:citekey>
-    <bcf:citekey order="2">DBLP:conf/cvpr/RedmonDGF16</bcf:citekey>
-    <bcf:citekey order="3">Yolo3</bcf:citekey>
+    <bcf:citekey order="1">ROS</bcf:citekey>
+    <bcf:citekey order="2">guzzi2018eaai</bcf:citekey>
+    <bcf:citekey order="3">guzzi2018eaai</bcf:citekey>
+    <bcf:citekey order="4">DBLP:conf/cvpr/RedmonDGF16</bcf:citekey>
+    <bcf:citekey order="5">COCO</bcf:citekey>
+    <bcf:citekey order="6">DBLP:conf/cvpr/RedmonDGF16</bcf:citekey>
+    <bcf:citekey order="7">Yolo3</bcf:citekey>
   </bcf:section>
   <bcf:sortlist section="0" name="nty/global/" type="entry" sortscheme="nty" sortnamekeyscheme="global" labelprefix="">
   <bcf:sorting>

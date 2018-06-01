@@ -19,6 +19,25 @@
 
 \refsection{0}
   \sortlist[entry]{nty/global/}
+    \entry{COCO}{inproceedings}{}
+      \name{author}{1}{}{%
+        {{hash=05a86a0cb0af6c695cf62e37f3aebd46}{%
+           family={Dollar},
+           familyi={D\bibinitperiod},
+           given={Tsung-Yi\bibnamedelimb Lin\bibnamedelimb Michael\bibnamedelimb Maire\bibnamedelimb Serge\bibnamedelimb Belongie\bibnamedelimb Lubomir\bibnamedelimb Bourdev\bibnamedelimb Ross\bibnamedelimb Girshick\bibnamedelimb James\bibnamedelimb Hays\bibnamedelimb Pietro\bibnamedelimb Perona\bibnamedelimb Deva\bibnamedelimb Ramanan\bibnamedelimb C.\bibnamedelimi Lawrence\bibnamedelimb Zitnick\bibnamedelima Piotr},
+           giveni={T\bibinithyphendelim Y\bibinitperiod\bibinitdelim L\bibinitperiod\bibinitdelim M\bibinitperiod\bibinitdelim M\bibinitperiod\bibinitdelim S\bibinitperiod\bibinitdelim B\bibinitperiod\bibinitdelim L\bibinitperiod\bibinitdelim B\bibinitperiod\bibinitdelim R\bibinitperiod\bibinitdelim G\bibinitperiod\bibinitdelim J\bibinitperiod\bibinitdelim H\bibinitperiod\bibinitdelim P\bibinitperiod\bibinitdelim P\bibinitperiod\bibinitdelim D\bibinitperiod\bibinitdelim R\bibinitperiod\bibinitdelim C\bibinitperiod\bibinitdelim L\bibinitperiod\bibinitdelim Z\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+      }
+      \strng{namehash}{05a86a0cb0af6c695cf62e37f3aebd46}
+      \strng{fullhash}{05a86a0cb0af6c695cf62e37f3aebd46}
+      \strng{authornamehash}{05a86a0cb0af6c695cf62e37f3aebd46}
+      \strng{authorfullhash}{05a86a0cb0af6c695cf62e37f3aebd46}
+      \field{sortinit}{D}
+      \field{sortinithash}{d10b5413de1f3d197b20897dd0d565bb}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Microsoft COCO: Common Objects in Contex}
+      \field{year}{2015}
+    \endentry
     \entry{guzzi2018eaai}{inproceedings}{}
       \name{author}{4}{}{%
         {{hash=18fb6cc950b727f9f4db27550e07650a}{%

@@ -30,7 +30,7 @@ class SmartThymio(Thymio, object):
         self.res = None
         self.global_step = 0
         self.camera_res  = (480,640)
-        self.target = []
+        self.target = ['cup']
         self.angular_pid = PID(Kd=5, Ki=0, Kp=0.5)
         self.linear_pid = PID(Kd=5, Ki=0, Kp=0.5)
         self.object_pid = PID(Kd=3, Ki=0, Kp=0.5)
@@ -43,6 +43,7 @@ class SmartThymio(Thymio, object):
 
         self.p = threading.Thread()
         self.obstacle = False
+        self.DEBUG = False
         self.N_LEDS = 5
         self.colors, self.class_names = self.get_model_info()
 
@@ -59,13 +60,10 @@ class SmartThymio(Thymio, object):
                                         is_array=True)
 
             image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-
+            self.image_with_boxes = image
         if save:
             file_name = '{}'.format(self.global_step)
             cv2.imwrite(IMAGE_SAVE_DIR + file_name + '.jpg',image)
-            np.save(IMAGE_SAVE_DIR  + file_name, image)
-            with open('{}{}.json'.format(IMAGE_SAVE_DIR,file_name), 'w') as f:
-                json.dump(res.json(), f)
 
         cv2.imshow('image', image)
         cv2.waitKey(1)
@@ -87,7 +85,6 @@ class SmartThymio(Thymio, object):
         return box
 
     def get_error(self, box):
-
         height, width = self.camera_res
         img_mid_p = width // 2
         top, left, bottom, right = box
@@ -126,16 +123,16 @@ class SmartThymio(Thymio, object):
         dt = self.time_elapsed - self.last_elapsed
         ang_vel = self.object_pid.step(err, dt)
 
-        # print('---------------')
-        # print('err   : {:.2f}'.format(err))
-        # print('offset: {:.2f}'.format(offset))
-        # print('dt    : {:.2f}'.format(dt))
-        # print('vel   : {:.2f}'.format(ang_vel))
-        # print('Found {}').format(target_data['class'])
+        if self.DEBUG:
+            print('---------------')
+            print('err   : {:.2f}'.format(err))
+            print('offset: {:.2f}'.format(offset))
+            print('dt    : {:.2f}'.format(dt))
+            print('vel   : {:.2f}'.format(ang_vel))
+            print('Found {}').format(target_data['class'])
 
         self.last_elapsed = self.time_elapsed
-        # print("{},".format(err))
-        # ang_vel /= 10
+
         self.on_target_turn_on_leds(box)
 
         self.update_vel(Params(self.FORWARD_VEL), Params(z=-ang_vel))
@@ -198,20 +195,15 @@ class SmartThymio(Thymio, object):
         self.on_target(target_data)
 
     def on_prediction_success(self, pred):
-
         targets_data = self.find_targets_data_in_img(pred, self.target)
 
         there_are_targets = len(targets_data) > 0
-        # select a target using some metrics, e.g rectangle area
+
         if not self.obstacle:
             if there_are_targets:
                 self.on_targets(targets_data)
             else:
-                # self.stop()
                 self.explore()
-        else:
-            # print('Obstacle...')
-            pass
 
     def ask_for_prediction(self, image):
         start = time()
@@ -230,12 +222,11 @@ class SmartThymio(Thymio, object):
 
         end = time()
 
-        # print('Prediction took {:.4f}'.format(end - start))
+        if self.DEBUG: print('Prediction took {:.4f}'.format(end - start))
 
         return self.res
 
     def on_get_image_from_camera_success(self, image):
-
         self.p = threading.Thread(target=self.ask_for_prediction, args=[image])
         self.p.start()
 
@@ -253,7 +244,6 @@ class SmartThymio(Thymio, object):
                 self.image = image
 
             except Exception as e:
-            #     # TODO add connection error and handling
                 print(e)
         else:
             if self.draw and self.res: self.draw_image(self.image, res=self.res, save=False)
@@ -272,10 +262,9 @@ class SmartThymio(Thymio, object):
                 print(e)
                 print('Could not convert to cv2')
             except Exception as e:
-            #     # TODO add connection error and handling
                 print(e)
         else:
-            if self.draw and self.res: self.draw_image(self.image, res=self.res)
+            if self.draw and self.res: self.draw_image(self.image, res=self.res, save=False)
 
 
 

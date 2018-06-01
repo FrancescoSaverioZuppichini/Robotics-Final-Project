@@ -58,7 +58,7 @@ Object Detection-Based Behaviour using YOLO on Thymio
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-The ability to classify in booth space and domain objects is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to archive the same goal using a two wheels robots, the Thymio, with a mounted frontal camera in order to act based on the object detected in the surrounding. 
+The ability to classify objects in both space and domain is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to archive the same goal using a two wheels robots, the Thymio, with a mounted frontal camera in order to make it act based on the objects detected in the surrounding. 
 \end{abstract}
 
 \section{Introduction}
@@ -68,33 +68,38 @@ Finding objects in space by identifying their identity and their coordinates is 
 The paper is structured as follows: we will first describe the architecture by showing each individual part of the topology and how they interact; then, we will discuss the challenges during the development process and finally we will show the results.
 
 \section{Architecture overview}
-
-Our architecture is composed by:
+We used ROS\cite{ROS} as operating system to develop and deploy our code on the Thymio. Our architecture is composed by:
 \begin{enumerate}
-	\item A robot with a mounted camera and an on-board computer with a running ROS node;
-	\item A web server running the Object Detection model;
-	\item A ROS node running on a local machine.
+	\item A robot with a mounted camera and an on-board computer
+	\item A web server running the Object Detection model
+	\item A ROS node running on a local machine that moves the robot
 \end{enumerate}
 As a robot, we used the \emph{MightyThymio} \cite{guzzi2018eaai}, which is a robot developed on top of the Thymio, a small mass-produced mobile robot usually used in primary and secondary education. The MightyThymio has a powerful Odroid C1 on board, a 1GB quad-core ARM Linux machine, with a HD camera mounted on top. The authors also implemented a ROS node to communicate with it and open-sourced the code.
 
-\subsection{Configuration}
+\subsection*{MightyThymio}
 
-In our project, the MightyThymio has the same configuration proposed in \cite{guzzi2018eaai}. On the on-board computer of the robot there is a running ROS node that can publish and subscribe in order to communicate with its sensors: it can have information from the proximity sensors to avoid hitting obstacles, it can take images from the mounted camera, it can use the leds to indicate an object or a direction, and more. On the local machine there is another running ROS node that specifies the behaviour of the MightyThymio based on the presence of specific objects around him.
-
+In our project, the MightyThymio has the same configuration proposed in \cite{guzzi2018eaai}. Briefly, the on-board computer expose the Thymios sensors through ROS. Thus, another ROS node can publish and subscribe in order to communicate with its sensors. For example, we can subscribe to the \emph{camera sensors} to get information from the proximity sensors to avoid hitting obstacles. Also, we can simply subscribe to the camera's topic to get both compressed and uncompressed images. 
 
 %Subscribe thyme event of camera, from whom compressed images, encoded in strings, then we send to the server, the server decode the compressed images and send prediction. After prediction, if class is target, for example person, the server send the person and bounding box. If the timeo see the person, it moves verso the person keeping her in the centre. So if the person moves, the timeo moves to keep the bounding box in the centre of the camera. So using only the image we can tell timeo to follow a target, without knowing the position of target or of thimeo.
 %The rod node is a module that can be put where you want.
 
+\subsection*{Local ROS node}
+We created a new ROS node to communicate with the running node on the MightyThymio in order to make it act accordingly with a specified behaviour based on the object detected by the model. The user specifies a set of target classes, for example \emph{dog} and \emph{cat}. Then our node, after having subscribed to the camera topic of the MightyThymio, sends the fetched image to the model trough an HTTP request and gets the bounding boxes for the detected classes. If there is no target prediction, the robot enters in \texttt{exploration} mode and starts spinning around. When one or more of the target classes are found, then our robot will start going forward while keeping the bounding box of the target in the centre of the camera in order to follow it. If we detect more classes, then the closest, which is represented by the biggest bounding box area, will be followed. In addiction, we have an obstacle-avoiding algorithm in order to properly stop the Thymio before it hits the target.
 
+\subsection*{Object Detection REST-API Web Server}
+We used pre-trained YOLO\cite{DBLP:conf/cvpr/RedmonDGF16}, the state-of-the-art real-time object detection model, to predict the bounding boxes for each class. The model was trained on the COCO(Common Object in Context)\cite{COCO} Dataset, that contains 80 classes. 
 
-\subsection{ROS: Robot Operating System}
-ROS is a robotics middleware that provides libraries and tools to help software developers create robot applications by supplying hardware abstraction, device drivers, message-passing, and more. One main concepts in ROS is the node, which is included in the level of Computation Graph, the peer-to-peer network of ROS processes that are processing data together. Nodes are processes that perform computation; a robot control system usually comprises many nodes, that act as modules.
+On top of that, we built a REST-API Web Server using Python3 and Flask, a micro-framework to create Web Servers, to make the model accessible from the Web.
+
+We decided to decouple the logic behind the robot behaviour and the model in order to make our architecture more scalable. For instance, if needed, we can deploy our model in the cloud while keeping the running ROS code intact. 
+
+\section{}
 
 \subsection{YOLO: Real-Time Object Detection}
 
 YOLO \cite{DBLP:conf/cvpr/RedmonDGF16} is a trained model for real-time object detection. While prior work on object detection repurposes classifiers to perform detection, YOLO handle the object detection as a regression problem to spatially separated bounding boxes and associated class probabilities. YOLO avoids resorting to complex pipelines that are slow and hard to optimize; instead, it uses a single convolutional neural network that simultaneously predicts multiple bounding boxes and class probabilities for those boxes. Using YOLO, You Only Look Once at an image to predict what objects are present and where they are.
 
-YOLO neural network uses features from the entire image to predict each bounding box simultaneously across all classes. The convolutional neural network contains 24 convolutional layers, that extract features from the image, followed by 2 fully connected layers, whose aim is to predict the output probabilities and coordinates. The system divides the input image into an $S \times S$ grid; if the center of an object falls into a grid cell, that grid cell is responsible for detecting that object. Each grid cell predicts $B$ bounding boxes and confidence scores for those boxes. These confidence scores reflect how confident the model is that the box contains an object and also how accurate it thinks the box is that it predicts. There is also a fast version of YOLO, designed with a neural network with fewer convolutional leayers and fewer filters in those layers.
+YOLO neural network uses features from the entire image to predict each bounding box simultaneously across all classes. The convolutional neural network contains 24 convolutional layers, that extract features from the image, followed by 2 fully connected layers, whose aim is to predict the output probabilities and coordinates. The system divides the input image into an $S \times S$ grid; if the centre of an object falls into a grid cell, that grid cell is responsible for detecting that object. Each grid cell predicts $B$ bounding boxes and confidence scores for those boxes. These confidence scores reflect how confident the model is that the box contains an object and also how accurate it thinks the box is that it predicts. There is also a fast version of YOLO, designed with a neural network with fewer convolutional layers and fewer filters in those layers.
 
 YOLO is extremely fast, it reason globally about the image when making predictions, it learns generalizable representations of objects and it is open source. YOLO still lags behind other detection systems in accuracy; while it can quickly identify object in images, it struggles to precisely localize some objects, especially small ones. However, it is still the state-of-the-art model for object detection in real-time.
 
@@ -105,7 +110,9 @@ For our project, we used the third version of YOLO, or YOLOv3 \cite{Yolo3}, whic
 \section{Server}
 
 \section{Results}
+
 \section{Conclusion}
+In this paper we presented a light and scalable architecture that uses a real-time Object Detection model to correctly find objects in the surrounding environment and to perform actions based on that. Since we only require a camera, our work can be used into similar robots running ROS with the correct hardware in order to extend their functionalities. Furthermore, since we used YOLO to perform the classification task, the model can be easily re-trained with other classes to expand the context domain. This symbiosis between Machine Learning and Robotic highlights the power of both areas by creating new interesting user cases and scenarios in which both disciplines can shine.
 
 \printbibliography
 
