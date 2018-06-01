@@ -2147,9 +2147,8 @@
     <bcf:citekey order="2">guzzi2018eaai</bcf:citekey>
     <bcf:citekey order="3">guzzi2018eaai</bcf:citekey>
     <bcf:citekey order="4">DBLP:conf/cvpr/RedmonDGF16</bcf:citekey>
-    <bcf:citekey order="5">COCO</bcf:citekey>
-    <bcf:citekey order="6">DBLP:conf/cvpr/RedmonDGF16</bcf:citekey>
-    <bcf:citekey order="7">Yolo3</bcf:citekey>
+    <bcf:citekey order="5">tensorflow2015-whitepaper</bcf:citekey>
+    <bcf:citekey order="6">COCO</bcf:citekey>
   </bcf:section>
   <bcf:sortlist section="0" name="nty/global/" type="entry" sortscheme="nty" sortnamekeyscheme="global" labelprefix="">
   <bcf:sorting>
