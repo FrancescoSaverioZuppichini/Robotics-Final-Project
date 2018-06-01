@@ -68,7 +68,7 @@ Specifically, our robot will wait for a user-specified class, e.g. \emph{dog}, a
 The paper is structured as follows: we will first describe the architecture by showing each individual part of the topology and how they interact; then, we will discuss the challenges during the development process and, finally, we will show the results.
 
 \section{Architecture overview}
-We used the Robotic Operating System,\cite{ROS}, since it is \emph{de facto} the state of the art. Our architecture is composed by:
+We used the Robotic Operating System,\cite{ROS}, since it is \emph{de facto} the state of the art. The architecture is composed by:
 \begin{enumerate}
 	\item A robot with a mounted camera and with a ROS node running on the on-board computer;
 	\item A web server running the Object Detection model;
@@ -215,7 +215,8 @@ As a user feedback, we turn on the five frontal Thymio's LEDs. The number and po
 \end{center}
 \caption{On board LEDs}
 \end{figure}
-A video showing the point of view of the Thymio while moving towards a \emph{cup} can be found \href{https://drive.google.com/open?id=1tZJpsfvfZGCGxunPWGHa3pLJnMj5mfOd}{here}\footnote{\texttt{https://drive.google.com/open?id=1tZJpsfvfZGCGxunPWGHa3pLJnMj5mfOd}}, and the third person view \href{https://drive.google.com/open?id=1Y5PMDQD8Aw0vxOK5yE5YwfiWLsMvXp-t}{here}\footnote{\texttt{https://drive.google.com/open?id=1Y5PMDQD8Aw0vxOK5yE5YwfiWLsMvXp-t}}.
+A video showing the point of view of the Thymio while moving towards a \emph{cup} can be found \href{https://drive.google.com/open?id=1tZJpsfvfZGCGxunPWGHa3pLJnMj5mfOd}{here}\footnote{\texttt{https://drive.google.com/open?id=1tZJpsfvfZGCGxunPWGHa3pLJnMj5mfOd}}, and the third person view \href{https://drive.google.com/open?id=1Y5PMDQD8Aw0vxOK5yE5YwfiWLsMvXp-t}{here}\footnote{\texttt{https://drive.google.com/open?id=1Y5PMDQD8Aw0vxOK5yE5YwfiWLsMvXp-t}}. We open-source all the project, the code can be found in our \href{https://github.com/FrancescoSaverioZuppichini/Robotics-Final-Project}{GitHub repository }\footnote{\texttt{https://github.com/FrancescoSaverioZuppichini/Robotics-Final-Project}}.
+
 \section{Conclusion}
 In this paper, we presented a light and scalable architecture that uses a real-time Object Detection model to correctly find objects in the surrounding environment and to perform actions based on them. Moreover, because the only  hardware constraint is the camera, our work can be used into similar robots running ROS  to extend their functionalities. Furthermore, since we used YOLO to perform the classification task, the model can be easily re-trained with other classes to increase the context domain. This symbiosis between Deep Learning and Robotics highlights the power of both areas by creating new interesting use cases and scenarios in which both disciplines can shine.
 
