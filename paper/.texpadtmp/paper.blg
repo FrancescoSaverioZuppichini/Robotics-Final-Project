@@ -1,18 +1,18 @@
 [0] Config.pm:354> INFO - This is Biber 2.7
 [0] Config.pm:357> INFO - Logfile is '/Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.blg'
-[51] biber-darwin:303> INFO - === Fri Jun  1, 2018, 17:59:30
-[79] Biber.pm:359> INFO - Reading '/Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.bcf'
-[161] Biber.pm:835> INFO - Found 5 citekeys in bib section 0
-[172] Biber.pm:3670> INFO - Processing section 0
-[198] Biber.pm:3840> INFO - Looking for bibtex format file '/Users/vaevictis/Desktop/robotics-final-project/paper/paper.bib' for section 0
-[199] bibtex.pm:1435> INFO - Decoding LaTeX character macros into UTF-8
-[205] bibtex.pm:1292> INFO - Found BibTeX data source '/Users/vaevictis/Desktop/robotics-final-project/paper/paper.bib'
-[208] Utils.pm:164> WARN - Name "Morgan Quigley��� , Brian Gerkey , Ken Conley , Josh Faust , Tully Foote , Jeremy Leibs , Eric Berger , Rob Wheeler , Andrew Ng" has too many commas: skipping name
-[242] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[242] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[242] Biber.pm:3499> INFO - Sorting list 'nty/global/' of type 'entry' with scheme 'nty' and locale 'en-US'
-[242] Biber.pm:3505> INFO - No sort tailoring available for locale 'en-US'
-[248] bbl.pm:608> INFO - Writing '/Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.bbl' with encoding 'ascii'
-[252] Utils.pm:164> WARN - The entry 'tensorflow2015-whitepaper' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
-[253] bbl.pm:712> INFO - Output to /Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.bbl
-[253] Biber.pm:109> INFO - WARNINGS: 2
+[42] biber-darwin:303> INFO - === Fri Jun  1, 2018, 21:30:49
+[63] Biber.pm:359> INFO - Reading '/Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.bcf'
+[149] Biber.pm:835> INFO - Found 5 citekeys in bib section 0
+[162] Biber.pm:3670> INFO - Processing section 0
+[176] Biber.pm:3840> INFO - Looking for bibtex format file '/Users/vaevictis/Desktop/robotics-final-project/paper/paper.bib' for section 0
+[177] bibtex.pm:1435> INFO - Decoding LaTeX character macros into UTF-8
+[182] bibtex.pm:1292> INFO - Found BibTeX data source '/Users/vaevictis/Desktop/robotics-final-project/paper/paper.bib'
+[185] Utils.pm:164> WARN - Name "Morgan Quigley��� , Brian Gerkey , Ken Conley , Josh Faust , Tully Foote , Jeremy Leibs , Eric Berger , Rob Wheeler , Andrew Ng" has too many commas: skipping name
+[218] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[218] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[218] Biber.pm:3499> INFO - Sorting list 'nty/global/' of type 'entry' with scheme 'nty' and locale 'en-US'
+[218] Biber.pm:3505> INFO - No sort tailoring available for locale 'en-US'
+[224] bbl.pm:608> INFO - Writing '/Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.bbl' with encoding 'ascii'
+[229] Utils.pm:164> WARN - The entry 'tensorflow2015-whitepaper' has characters which cannot be encoded in 'ascii'. Recoding problematic characters into macros.
+[230] bbl.pm:712> INFO - Output to /Users/vaevictis/Desktop/robotics-final-project/paper/.texpadtmp/paper.bbl
+[230] Biber.pm:109> INFO - WARNINGS: 2

@@ -38,29 +38,16 @@
 }
 
 \title{\LARGE \bf
-Object Detection-Based Behaviour using YOLO on Thymio
+Object Detection-Based Behaviour using Deep-Learning on Thymio
 }
 
-%\author{ \parbox{3 in}{\centering Huibert Kwakernaak*
-%         \thanks{*Use the $\backslash$thanks command to put information here}\\
-%         Faculty of Electrical Engineering, Mathematics and Computer Science\\
-%         University of Twente\\
-%         7500 AE Enschede, The Netherlands\\
-%         {\tt\small h.kwakernaak@autsubmit.com}}
-%         \hspace*{ 0.5 in}
-%         \parbox{3 in}{ \centering Pradeep Misra**
-%         \thanks{**The footnote marks may be inserted manually}\\
-%        Department of Electrical Engineering \\
-%         Wright State University\\
-%         Dayton, OH 45435, USA\\
-%         {\tt\small pmisra@cs.wright.edu}}
-%}
 
-\author{Francesco Saverio Zuppichini$^{1}$ and Alessia Ruggeri$^{2}$}% <-this % stops a space
-
+\author{Francesco Saverio Zuppichini$^{1}$ and Alessia Ruggeri$^{2}$% <-this % stops a space
+\thanks{$^{1}$Francesco Saverio Zuppichini, \href{mailto:zuppif@usi.ch}{zuppif@usi.ch} , AI master student at Università della Svizzera Italiana }%
+\thanks{$^{2}$Alessia Ruggeri, \href{mailto:ruggea@usi.ch}{ruggea@usi.ch} , AI master student at Università della Svizzera Italiana }%
+}
 
 \begin{document}
-
 
 
 \maketitle
@@ -70,7 +57,7 @@ Object Detection-Based Behaviour using YOLO on Thymio
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-The ability to classify objects in both space and domain is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to archive the same goal using a cheap two-wheels robot, the Thymio, with a mounted frontal camera in order to make it act based on the objects detected in the surrounding. 
+The ability to classify objects in both space and domain is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to archive the same goal using a cheap two-wheels robot, the Thymio, with a mounted frontal camera in order to make it moves based on the objects detected in the surrounding. 
 \end{abstract}
 
 \section{Introduction}
@@ -118,10 +105,15 @@ The following endpoints are available:
 GET /model
 POST /prediction  --image --size --compress
 \end{lstlisting}
-Each of them returns a JSON serialised response. The \texttt{/model} endpoint is used to get information about the model. These information are the classes that can be predicted and the colour associated to each one of them. It follows a response sample:
+Each of them returns a JSON serialised response. The \texttt{/model} endpoint is used to get information about the model. This information are the classes that can be predicted and the colour associated to each one of them. It follows a response sample:
 \begin{lstlisting}
 {
-    "classes": [ "person", "bicycle", "car", "motorbike", "aeroplane", ... ]
+    "classes": [ 
+    "person", 
+    "bicycle", 
+    "car", 
+    "motorbike", 
+    "aeroplane", ... ]
     "colors": [[255, 38, 0], [0, 63, 255], ... ]   
  }
 \end{lstlisting}
@@ -223,6 +215,8 @@ As a user feedback, we turn on the five frontal Thymio's LEDs. The number and po
 \end{center}
 \caption{On board LEDs}
 \end{figure}
+A video showing the point of view of the Thymio while moving towards a \emph{cup} can be found at 
+
 \section{Conclusion}
 In this paper, we presented a light and scalable architecture that uses a real-time Object Detection model to correctly find objects in the surrounding environment and to perform actions based on them. Moreover, because the only  hardware constraint is the camera, our work can be used into similar robots running ROS  to extend their functionalities. Furthermore, since we used YOLO to perform the classification task, the model can be easily re-trained with other classes to increase the context domain. This symbiosis between Machine Learning and Robotics highlights the power of both areas by creating new interesting use cases and scenarios in which both disciplines can shine.
 
