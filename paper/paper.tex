@@ -196,8 +196,8 @@ With these settings we were able to smoothly guide the robot to the target; in t
 To accomplish this task, we defined two PIDs, one for the linear velocity and one for the angular velocity. The errors are $e_l$ for the linear PID and $e_a$ for the angular PID, defined as follows. We denote the front sensor set as $S_f$ and the rear sensor set as $S_r$, where each element in the set is a double representing the value from the sensor. In our case the cardinality of the sets are $|S_f| = 5$ and $|S_r|=2$.
 \begin{align}
 	e_l &= \sum\limits_{i=0}^{|S_f|} S_f(i) - \sum\limits_{i = 0}^{|R_f|} R_f(i) \\
-	e_a &= (\sum\limits_{i=0}^{\frac{|S_f|}{2}} S_f(i) - \sum\limits_{i = \frac{|S_f|}{2} }^{|S_f|} S_f(i))  \\
-	&- (\sum\limits_{i=0}^{\frac{|R_f|}{2}} R_f(i) - \sum\limits_{i = \frac{|R_f|}{2} }^{|R_f|} R_f(i))  \notag
+	e_a &= \sum\limits_{i=0,k=|S_f|}^{\frac{|S_f|}{2}} S_f(i) - S_f(k) - \sum\limits_{i=0,k=|R_f|}^{\frac{|R_f|}{2}} R_f(i) - R_f(k)
+  \notag
 \end{align}
 The linear error, $e_l$, is just the sum of all the frontal sensors values minus the rear sensors values.  The angular error is defined as the difference between each pair of sensors on the left and on the right. In both the equations, we subtract the frontal values from the rear ones in order to invert the sign of the PID output so that when there is an obstacle in front of the robot, the velocity is negative and vice-versa. 
 
