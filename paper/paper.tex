@@ -57,18 +57,18 @@ Object Detection-Based Behaviour using Deep-Learning on Thymio
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-The ability to classify objects in both space and domain is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to archive the same goal using a cheap two-wheels robot, the Thymio, with a mounted frontal camera in order to make it moves based on the objects detected in the surrounding. 
+The ability to classify objects in both space and domain is encoded in an enormous variety of species on the planet. Recently, deep learning approaches have been developed to make machines able to mimic the same task with interesting results. With this paper, we propose a minimal architecture to achieve the same goal using a cheap two-wheels robot, the Thymio, with a mounted frontal camera in order to make it moves based on the objects detected in the surrounding. 
 \end{abstract}
 
 \section{Introduction}
 Finding objects in space by identifying their identity and their coordinates is a basic task that almost every animal is able to accomplish. The ability to solve this problem is extremely important in robotics, where a machine needs to act based on its surrounding.  We implemented an architecture, running on ROS, that is able to find selected target objects through YOLO, a real-time object detection model,  by only using a cheap camera.
 
-Specifically, our robot will wait for a user-specified class, e.g. \emph{dog}, and, when it finds it using the object detecttion model on the camera image, it moves towards the object by keeping it in the middle of its view. We also implemented a PID-based algorithm to avoid obstacles and properly stop in front of the founded item.
+Specifically, our robot will wait for a user-specified class, e.g. \emph{dog}, and, when it finds it using the object detecttion model on the camera image, it moves towards the object by keeping it in the middle of its view. We also implemented a PID-based algorithm to avoid obstacles and properly stop in front of the found item.
 
 The paper is structured as follows: we will first describe the architecture by showing each individual part of the topology and how they interact; then, we will discuss the challenges during the development process and, finally, we will show the results.
 
 \section{Architecture overview}
-We used the Robotic Operating System,\cite{ROS}, since it is \emph{de facto} the state of the art. The architecture is composed by:
+We used the Robotic Operating System,\cite{ROS}, since it is \emph{de facto} the state of the art for robotics. The architecture is composed by:
 \begin{enumerate}
 	\item A robot with a mounted camera and with a ROS node running on the on-board computer;
 	\item A web server running the Object Detection model;
@@ -86,7 +86,7 @@ In our project, the MightyThymio has the same configuration proposed in \cite{gu
 \end{figure}
 
 \subsection*{Local ROS node}
-We created a new ROS node to communicate with the running node on the MightyThymio, in order to control it accordingly with a specified behaviour based on the object detected by the model. The user specifies a set of target classes, for example \emph{dog} and \emph{cat}. Then our node, after having subscribed to the camera topic of the MightyThymio, sends the fetched image to the model hosted on a Web  Server through an HTTP request and gets as response the detected classes and their bounding boxes. In case there is no target object, the robot enters in \texttt{exploration} mode and starts spinning around. When one or more of the target classes are found simultaneously, the robot will go towards the target with the biggest bounding box area while keeping it in the center of the camera in order to follow it. In addition, we have an obstacle-avoiding algorithm in order to properly stop the Thymio before it hits the target.
+We created a new ROS node to communicate with the running node on the MightyThymio, in order to control it accordingly with a specific behaviour based on the object detected by the model. The user specifies a set of target classes, for example \emph{dog} and \emph{cat}. Then our node, after having subscribed to the camera topic of the MightyThymio, sends the fetched image to the model hosted on a Web  Server through an HTTP request and gets as response the detected classes and their bounding boxes. In case there is no target object, the robot enters in \texttt{exploration} mode and starts spinning around. When one or more of the target classes are found simultaneously, the robot will go towards the target with the biggest bounding box area while keeping it in the center of the camera in order to follow it. In addition, we have an obstacle-avoiding algorithm in order to properly stop the Thymio before it hits the target.
 
 \subsection*{Object Detection REST-API Web Server}
 We used pre-trained Keras implementation\footnote{https://github.com/qqwweee/keras-yolo3} of YOLO\cite{DBLP:conf/cvpr/RedmonDGF16} model, the state-of-the-art real-time object detection model, with TensorFlow\cite{tensorflow2015-whitepaper} backend to predict the classes in the image and their bounding boxes. A bounding box is a rectangle in which the predicted class is contained. For example, in the following picture we can see the bounding boxes for a \emph{dog}, a \emph{bicycle} and a \emph{truck}. Each box is labelled with the class name and its score.
