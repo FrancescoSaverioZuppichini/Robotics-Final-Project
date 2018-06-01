@@ -14,7 +14,7 @@ from time import time
 from time import sleep
 import threading
 from thymio_msgs.msg import Led
-
+import sys
 IMAGE_SAVE_DIR = './image_save/'
 
 class SmartThymio(Thymio, object):
@@ -30,7 +30,7 @@ class SmartThymio(Thymio, object):
         self.res = None
         self.global_step = 0
         self.camera_res  = (480,640)
-        self.target = ['dog','teddy bear', 'chair']
+        self.target = []
         self.angular_pid = PID(Kd=5, Ki=0, Kp=0.5)
         self.linear_pid = PID(Kd=5, Ki=0, Kp=0.5)
         self.object_pid = PID(Kd=3, Ki=0, Kp=0.5)
@@ -59,9 +59,11 @@ class SmartThymio(Thymio, object):
                                         is_array=True)
 
             image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+
         if save:
             file_name = '{}'.format(self.global_step)
-            np.save(IMAGE_SAVE_DIR + file_name, image)
+            cv2.imwrite(IMAGE_SAVE_DIR + file_name + '.jpg',image)
+            np.save(IMAGE_SAVE_DIR  + file_name, image)
             with open('{}{}.json'.format(IMAGE_SAVE_DIR,file_name), 'w') as f:
                 json.dump(res.json(), f)
 
@@ -115,13 +117,12 @@ class SmartThymio(Thymio, object):
         self.led_subscriber.publish(Led(values=mask, id=id))
 
     def on_target(self, target_data):
-        print('Found {}').format(target_data['class'])
         box = self.get_box(target_data)
 
         err, offset = self.get_error(box)
 
         height, width = self.camera_res
-        err = err / height  # normalize in %
+        err = err / width  # normalize in %
         dt = self.time_elapsed - self.last_elapsed
         ang_vel = self.object_pid.step(err, dt)
 
@@ -130,13 +131,28 @@ class SmartThymio(Thymio, object):
         # print('offset: {:.2f}'.format(offset))
         # print('dt    : {:.2f}'.format(dt))
         # print('vel   : {:.2f}'.format(ang_vel))
+        # print('Found {}').format(target_data['class'])
 
         self.last_elapsed = self.time_elapsed
-
+        # print("{},".format(err))
         # ang_vel /= 10
         self.on_target_turn_on_leds(box)
 
         self.update_vel(Params(self.FORWARD_VEL), Params(z=-ang_vel))
+
+    def interactive(self):
+        def change_targets(thymio):
+            while True:
+                try:
+                    classes = input("Change class:")
+                    print(classes)
+                    classes = classes.split(',')
+                    thymio.target = classes
+                    print "Targets changed to {}".format(thymio.target)
+                except:
+                    continue
+        t = threading.Thread(target=change_targets, args=[self])
+        t.start()
 
     def on_receive_sensor_data(self, data, sensor_id, name):
         val = data.range
@@ -194,7 +210,8 @@ class SmartThymio(Thymio, object):
                 # self.stop()
                 self.explore()
         else:
-            print('Obstacle...')
+            # print('Obstacle...')
+            pass
 
     def ask_for_prediction(self, image):
         start = time()
@@ -239,7 +256,7 @@ class SmartThymio(Thymio, object):
             #     # TODO add connection error and handling
                 print(e)
         else:
-            if self.draw and self.res: self.draw_image(self.image, res=self.res)
+            if self.draw and self.res: self.draw_image(self.image, res=self.res, save=False)
         return
 
     def camera_callback(self, data):
