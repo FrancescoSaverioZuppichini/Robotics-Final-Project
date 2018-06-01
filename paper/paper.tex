@@ -18,7 +18,7 @@
 \usepackage{biblatex}
 \bibliography{paper}
 \usepackage{float}
-\usepackage{amsmath}
+\usepackage{amsmath, amsthm, amssymb}
 \usepackage{graphicx}
 % The following packages can be found on http:\\www.ctan.org
 %\usepackage{graphics} % for pdf, bitmapped graphics files
@@ -201,12 +201,12 @@ With these settings we were able to smoothly guide the robot to the target, in t
 
 \paragraph{Obstacle} When proximity sensors, five in the front and two in the back, detect something,  the robot stops any activity and goes into the \emph{Obstacle} state. We implemented a simple yet effective PID controllers based algorithm to move the Thymio await from any object in front or behind it. 
 
-To accomplish this task, we defined two PIDs, one for the linear velocity and one for the angular. The errors are $e_l$ for the linear PID and $e_a$ for the angular PID, defined as follow. We denote the front sensor set as $S_f$ and the rear sensor set as $S_r$, where each element in the set is a double representing the value from the sensor. In our case, $|S_f| = 5$ and $|S_r|=2$.
-\begin{align*}
+To accomplish this task, we defined two PIDs, one for the linear velocity and one for the angular. The errors are $e_l$ for the linear PID and $e_a$ for the angular PID, defined as follow. We denote the front sensor set as $S_f$ and the rear sensor set as $S_r$, where each element in the set is a double representing the value from the sensor. In our case the cardinalility of each set are $|S_f| = 5$ and $|S_r|=2$.
+\begin{align}
 	e_l &= \sum\limits_{i=0}^{|S_f|} S_f(i) - \sum\limits_{i = 0}^{|R_f|} R_f(i) \\
-	e_a &= (\sum\limits_{i=0}^{\frac{|S_f|}{2}} S_f(i) - \sum\limits_{i = \frac{|S_f|}{2} }^{|S_f|} S_f(i)) - 
-	(\sum\limits_{i=0}^{\frac{|R_f|}{2}} R_f(i) - \sum\limits_{i = \frac{|R_f|}{2} }^{|R_f|} R_f(i))
-\end{align*}
+	e_a &= (\sum\limits_{i=0}^{\frac{|S_f|}{2}} S_f(i) - \sum\limits_{i = \frac{|S_f|}{2} }^{|S_f|} S_f(i))  \\
+	&- (\sum\limits_{i=0}^{\frac{|R_f|}{2}} R_f(i) - \sum\limits_{i = \frac{|R_f|}{2} }^{|R_f|} R_f(i))  \notag
+\end{align}
 The linear error, $e_l$, is just the sum of all the frontal sensors values minus the rear sensors values.  The angular error is defined as the difference between each pair of sensors on the left and the right. In booth equation, we subtract the frontal values from the rear in order to invert the sign of the PID output so when there is an obstacle in front of the robot, the velocity is negative and vice-versa. 
 
 As user feedback, we turn on the five frontal Thymio's LEDs. The number and position of the LEDs are based on the width of target's bounding box. For example, a big object on the left side will turn on two LEDs, while a smaller only one. The following figure shows an example where the robot is looking for a \emph{cup}:
